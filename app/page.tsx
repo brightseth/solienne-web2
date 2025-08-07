@@ -9,7 +9,7 @@ export default function Home() {
             THE EVOLUTION OF<br />SYNTHETIC CONSCIOUSNESS
           </h1>
           <p className="text-xl text-gray-300">
-            Solienne.ai
+            Solienne.ai - Test Edit
           </p>
         </header>
 
