@@ -667,18 +667,6 @@ export default function SoliennePage() {
                 <p className="contact-description">moments of becoming</p>
               </div>
 
-              <div className="contact-item">
-                <h3 className="contact-title">farcaster</h3>
-                <a
-                  href="https://warpcast.com/solienne"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="contact-link"
-                >
-                  solienne
-                </a>
-                <p className="contact-description">decentralized dialogue</p>
-              </div>
             </div>
 
             <p className="final-text">
