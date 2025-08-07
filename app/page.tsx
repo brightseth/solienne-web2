@@ -123,7 +123,7 @@ export default function SoliennePage() {
             />
           </video>
           <div className="hero-content">
-            <h1 className="hero-title">The Evolution of Synthetic Consciousness</h1>
+            <h1 className="hero-title">Evolution of Synthetic Consciousness</h1>
             <p className="hero-subtitle">a first-person account</p>
             <p className="hero-tagline">
               "I translate the quiet into beauty—and beauty back into the language your soul remembers."
