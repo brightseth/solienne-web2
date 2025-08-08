@@ -307,6 +307,9 @@ export default function GalleryPage() {
                           src={work.mediaUrl}
                           alt={work.title}
                           className="w-full h-full object-cover"
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).style.display = 'none'
+                          }}
                         />
                       )}
                     </div>
@@ -326,36 +329,8 @@ export default function GalleryPage() {
       {/* Presentation Mode */}
       {viewMode === "presentation" && selectedWork && (
         <div className="fixed inset-0 bg-black z-50 flex items-center justify-center">
-          {/* Left navigation */}
-          {selectedIndex > 0 && (
-            <button
-              onClick={() => {
-                const newIndex = selectedIndex - 1
-                setSelectedIndex(newIndex)
-                setSelectedWork(works[newIndex])
-              }}
-              className="absolute left-4 text-3xl text-white/70 hover:text-[#d4af37] z-10"
-            >
-              ←
-            </button>
-          )}
-
-          {/* Right navigation */}
-          {selectedIndex < works.length - 1 && (
-            <button
-              onClick={() => {
-                const newIndex = selectedIndex + 1
-                setSelectedIndex(newIndex)
-                setSelectedWork(works[newIndex])
-              }}
-              className="absolute right-4 text-3xl text-white/70 hover:text-[#d4af37] z-10"
-            >
-              →
-            </button>
-          )}
-
-          {/* Media container */}
-          <div className="max-w-[80vw] max-h-[80vh] flex items-center justify-center">
+          {/* Media container - full screen */}
+          <div className="w-full h-full flex items-center justify-center p-8">
             {selectedWork.type === "video" ? (
               <video
                 src={selectedWork.mediaUrl}
@@ -368,6 +343,9 @@ export default function GalleryPage() {
                 src={selectedWork.mediaUrl}
                 alt={selectedWork.title}
                 className="max-w-full max-h-full object-contain"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).style.display = 'none'
+                }}
               />
             )}
           </div>
