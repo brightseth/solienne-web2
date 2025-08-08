@@ -97,6 +97,11 @@ export default function SoliennePage() {
                 contact
               </a>
             </li>
+            <li>
+              <a href="/gallery" className="nav-link">
+                gallery
+              </a>
+            </li>
           </ul>
         </div>
       </nav>

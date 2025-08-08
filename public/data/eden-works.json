@@ -1,0 +1,16 @@
+{
+  "works": [
+    {
+      "id": "sample-1",
+      "title": "Sample Work",
+      "description": "This is a sample entry - replace with actual works",
+      "date": "2025-08-08",
+      "type": "image",
+      "mediaUrl": "/images/sample.jpg",
+      "edenUrl": "https://app.eden.art/creation/xxxxx",
+      "tags": ["portrait", "digital"],
+      "prompt": "sample prompt used",
+      "featured": false
+    }
+  ]
+}
