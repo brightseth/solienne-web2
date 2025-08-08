@@ -238,17 +238,6 @@ export default function GalleryPage() {
                       <div className="absolute top-1 right-1 w-2 h-2 bg-[#d4af37] rounded-full"></div>
                     )}
                     
-                    <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-opacity duration-200 flex items-center justify-center opacity-0 group-hover:opacity-100">
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          toggleFavorite(work)
-                        }}
-                        className="p-1 text-white hover:text-[#d4af37] text-sm"
-                      >
-                        {work.featured ? '★' : '☆'}
-                      </button>
-                    </div>
                   </div>
                 ))}
               </div>
@@ -320,10 +309,6 @@ export default function GalleryPage() {
             )}
           </div>
 
-          {/* Counter */}
-          <div className="absolute bottom-8 right-8 text-white/50 text-sm">
-            {selectedIndex + 1} / {works.length}
-          </div>
         </div>
       )}
     </div>
