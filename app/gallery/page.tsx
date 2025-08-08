@@ -201,24 +201,19 @@ export default function GalleryPage() {
       </nav>
 
       {viewMode === "grid" && (
-        <>
-          {/* Drop Zone */}
-          <div
-            className={`fixed top-0 left-0 right-0 bottom-0 z-10 pointer-events-none ${
-              isUploading ? 'bg-[#d4af37]/10 pointer-events-auto' : ''
-            }`}
-            onDrop={handleDrop}
-            onDragOver={handleDragOver}
-          >
-            {isUploading && (
-              <div className="flex items-center justify-center h-full">
-                <div className="text-[#d4af37] text-center">
-                  <div className="animate-spin w-12 h-12 border-2 border-[#d4af37] border-t-transparent rounded-full mx-auto mb-4"></div>
-                  <p className="text-xl">Processing...</p>
-                </div>
+        <div
+          className="min-h-screen"
+          onDrop={handleDrop}
+          onDragOver={handleDragOver}
+        >
+          {isUploading && (
+            <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center">
+              <div className="text-[#d4af37] text-center">
+                <div className="animate-spin w-12 h-12 border-2 border-[#d4af37] border-t-transparent rounded-full mx-auto mb-4"></div>
+                <p className="text-xl">Uploading...</p>
               </div>
-            )}
-          </div>
+            </div>
+          )}
 
           {works.length === 0 && !isUploading && (
             <div className="flex items-center justify-center min-h-screen">
@@ -260,7 +255,7 @@ export default function GalleryPage() {
               </div>
             </div>
           )}
-        </>
+        </div>
       )}
 
       {/* Presentation Mode */}
