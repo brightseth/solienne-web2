@@ -278,16 +278,6 @@ export default function GalleryPage() {
             →
           </button>
 
-          {/* Close button */}
-          <button
-            onClick={() => {
-              setViewMode("grid")
-              setSelectedWork(null)
-            }}
-            className="absolute top-8 right-8 text-2xl text-white hover:text-[#d4af37] z-10"
-          >
-            ×
-          </button>
 
           {/* Media */}
           <div className="w-full h-full flex items-center justify-center p-8">
