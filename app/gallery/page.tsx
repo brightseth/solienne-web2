@@ -225,11 +225,10 @@ export default function GalleryPage() {
                           muted
                         />
                       ) : (
-                        <Image
+                        <img
                           src={work.mediaUrl}
                           alt={work.title}
-                          fill
-                          className="object-cover"
+                          className="w-full h-full object-cover"
                         />
                       )}
                     </div>
@@ -289,11 +288,9 @@ export default function GalleryPage() {
                 autoPlay
               />
             ) : (
-              <Image
+              <img
                 src={selectedWork.mediaUrl}
                 alt={selectedWork.title}
-                width={1200}
-                height={800}
                 className="max-w-full max-h-full object-contain"
               />
             )}
