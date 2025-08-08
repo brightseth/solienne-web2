@@ -248,7 +248,7 @@ export default function GalleryPage() {
       {/* Presentation Mode */}
       {viewMode === "presentation" && selectedWork && (
         <div className="fixed inset-0 bg-black z-50 flex items-center justify-center">
-          {/* Navigation arrows */}
+          {/* Navigation arrows - outside image area */}
           <button
             onClick={() => {
               if (selectedIndex > 0) {
@@ -258,7 +258,7 @@ export default function GalleryPage() {
               }
             }}
             disabled={selectedIndex === 0}
-            className="absolute left-8 top-1/2 transform -translate-y-1/2 text-4xl text-white hover:text-[#d4af37] disabled:opacity-30 disabled:cursor-not-allowed z-10"
+            className="absolute left-4 top-1/2 transform -translate-y-1/2 text-6xl text-white hover:text-[#d4af37] disabled:opacity-30 disabled:cursor-not-allowed z-20 -translate-x-full"
           >
             ←
           </button>
@@ -272,7 +272,7 @@ export default function GalleryPage() {
               }
             }}
             disabled={selectedIndex === works.length - 1}
-            className="absolute right-8 top-1/2 transform -translate-y-1/2 text-4xl text-white hover:text-[#d4af37] disabled:opacity-30 disabled:cursor-not-allowed z-10"
+            className="absolute right-4 top-1/2 transform -translate-y-1/2 text-6xl text-white hover:text-[#d4af37] disabled:opacity-30 disabled:cursor-not-allowed z-20 translate-x-full"
           >
             →
           </button>
