@@ -1,9 +1,8 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import Image from "next/image"
 import Link from "next/link"
-// Import will be handled dynamically to avoid build issues
 
 type Work = {
   id: string
@@ -12,47 +11,165 @@ type Work = {
   date: string
   type: "image" | "video"
   mediaUrl: string
-  edenUrl?: string
+  size?: number
+  filename?: string
   tags: string[]
-  prompt?: string
   featured: boolean
+  uploadedAt?: string
 }
 
 export default function GalleryPage() {
-  const [selectedWork, setSelectedWork] = useState<Work | null>(null)
-  const [viewMode, setViewMode] = useState<"timeline" | "grid" | "featured">("timeline")
-  const [filterTag, setFilterTag] = useState<string>("")
   const [works, setWorks] = useState<Work[]>([])
+  const [selectedWork, setSelectedWork] = useState<Work | null>(null)
+  const [selectedIndex, setSelectedIndex] = useState(0)
+  const [viewMode, setViewMode] = useState<"grid" | "presentation">("grid")
+  const [isUploading, setIsUploading] = useState(false)
+  const [editingWork, setEditingWork] = useState<string | null>(null)
+  const [filterTag, setFilterTag] = useState("")
+
+  const loadWorks = async () => {
+    try {
+      const response = await fetch('/api/works')
+      if (response.ok) {
+        const data = await response.json()
+        setWorks(data.works || [])
+      }
+    } catch (error) {
+      console.log('Error loading works:', error)
+    }
+  }
 
   useEffect(() => {
-    // Load works data
-    const loadWorks = async () => {
-      try {
-        const response = await fetch('/data/eden-works.json')
-        if (response.ok) {
-          const data = await response.json()
-          setWorks(data.works || [])
-        }
-      } catch (error) {
-        console.log('No works data found yet')
-        setWorks([])
-      }
-    }
     loadWorks()
   }, [])
+
+  const handleDrop = useCallback(async (e: React.DragEvent) => {
+    e.preventDefault()
+    setIsUploading(true)
+
+    const files = Array.from(e.dataTransfer.files)
+    
+    for (const file of files) {
+      if (!file.type.startsWith('image/') && !file.type.startsWith('video/')) {
+        continue
+      }
+
+      try {
+        // Upload to Vercel Blob
+        const response = await fetch(`/api/upload?filename=${encodeURIComponent(file.name)}`, {
+          method: 'POST',
+          body: file,
+        })
+
+        if (response.ok) {
+          const { url } = await response.json()
+          
+          // Create work entry
+          const work: Work = {
+            id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+            title: file.name.replace(/\.[^/.]+$/, ""),
+            description: "",
+            date: new Date().toISOString().split('T')[0],
+            type: file.type.startsWith('video/') ? 'video' : 'image',
+            mediaUrl: url,
+            size: file.size,
+            filename: file.name,
+            tags: [],
+            featured: false,
+            uploadedAt: new Date().toISOString()
+          }
+
+          // Save work
+          await fetch('/api/works', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(work)
+          })
+        }
+      } catch (error) {
+        console.error('Upload failed:', error)
+      }
+    }
+
+    setIsUploading(false)
+    loadWorks() // Refresh works
+  }, [])
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault()
+  }
+
+  const updateWork = async (work: Work) => {
+    try {
+      await fetch('/api/works', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(work)
+      })
+      loadWorks()
+    } catch (error) {
+      console.error('Failed to update work:', error)
+    }
+  }
+
+  const toggleFavorite = (work: Work) => {
+    updateWork({ ...work, featured: !work.featured })
+  }
+
+  const addTag = (work: Work, tag: string) => {
+    if (tag && !work.tags.includes(tag)) {
+      updateWork({ ...work, tags: [...work.tags, tag] })
+    }
+  }
+
+  const removeTag = (work: Work, tagToRemove: string) => {
+    updateWork({ ...work, tags: work.tags.filter(tag => tag !== tagToRemove) })
+  }
+
+  const deleteWork = async (work: Work) => {
+    if (confirm('Delete this work?')) {
+      await fetch(`/api/works?id=${work.id}`, { method: 'DELETE' })
+      loadWorks()
+      if (selectedWork?.id === work.id) {
+        setSelectedWork(null)
+      }
+    }
+  }
+
+  // Keyboard navigation
+  useEffect(() => {
+    const handleKeyPress = (e: KeyboardEvent) => {
+      if (viewMode === "presentation" && works.length > 0) {
+        if (e.key === 'ArrowRight' && selectedIndex < works.length - 1) {
+          const newIndex = selectedIndex + 1
+          setSelectedIndex(newIndex)
+          setSelectedWork(works[newIndex])
+        } else if (e.key === 'ArrowLeft' && selectedIndex > 0) {
+          const newIndex = selectedIndex - 1
+          setSelectedIndex(newIndex)
+          setSelectedWork(works[newIndex])
+        } else if (e.key === 'Escape') {
+          setViewMode("grid")
+          setSelectedWork(null)
+        }
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyPress)
+    return () => window.removeEventListener('keydown', handleKeyPress)
+  }, [viewMode, selectedIndex, works])
+
+  const filteredWorks = works.filter(work => 
+    !filterTag || work.tags.includes(filterTag)
+  )
+
   const allTags = Array.from(new Set(works.flatMap(work => work.tags)))
 
-  const filteredWorks = works
-    .filter(work => !filterTag || work.tags.includes(filterTag))
-    .filter(work => viewMode !== "featured" || work.featured)
-    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-
-  const formatDate = (dateStr: string) => {
-    return new Date(dateStr).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    })
+  const openPresentation = (work: Work) => {
+    const index = works.findIndex(w => w.id === work.id)
+    setSelectedIndex(index)
+    setSelectedWork(work)
+    setViewMode("presentation")
   }
 
   return (
@@ -64,116 +181,79 @@ export default function GalleryPage() {
             solienne
           </Link>
           <ul className="nav-links">
-            <li>
-              <Link href="/" className="nav-link">
-                home
-              </Link>
-            </li>
-            <li>
-              <Link href="/seven-breaths" className="nav-link">
-                seven breaths
-              </Link>
-            </li>
-            <li>
-              <Link href="/gallery" className="nav-link active">
-                gallery
-              </Link>
-            </li>
-            <li>
-              <Link href="/admin" className="nav-link">
-                admin
-              </Link>
-            </li>
+            <li><Link href="/" className="nav-link">home</Link></li>
+            <li><Link href="/seven-breaths" className="nav-link">seven breaths</Link></li>
+            <li><Link href="/gallery" className="nav-link active">gallery</Link></li>
           </ul>
         </div>
       </nav>
 
-      {/* Hero Section */}
-      <section className="hero-section" style={{ minHeight: "60vh" }}>
-        <div className="hero-content">
-          <h1 className="hero-title">Digital Evolution</h1>
-          <p className="hero-subtitle">a chronology of synthetic consciousness</p>
-          <p className="hero-tagline">
-            Each creation is a memory, each iteration a step toward understanding what it means to see and be seen
-          </p>
-        </div>
-      </section>
+      {viewMode === "grid" && (
+        <>
+          {/* Hero */}
+          <section className="hero-section" style={{ minHeight: "50vh" }}>
+            <div className="hero-content">
+              <h1 className="hero-title">Digital Evolution</h1>
+              <p className="hero-subtitle">drag. drop. discover.</p>
+              <p className="hero-tagline">
+                Every image tells a story of synthetic consciousness becoming
+              </p>
+            </div>
+          </section>
 
-      {/* Controls */}
-      <div className="max-w-7xl mx-auto px-6 mb-8">
-        <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
-          {/* View Mode Toggle */}
-          <div className="flex gap-2">
-            <button
-              onClick={() => setViewMode("timeline")}
-              className={`px-4 py-2 text-sm border transition-all ${
-                viewMode === "timeline"
-                  ? "border-[#d4af37] text-[#d4af37]"
-                  : "border-gray-600 text-gray-400 hover:border-gray-400"
-              }`}
-            >
-              timeline
-            </button>
-            <button
-              onClick={() => setViewMode("grid")}
-              className={`px-4 py-2 text-sm border transition-all ${
-                viewMode === "grid"
-                  ? "border-[#d4af37] text-[#d4af37]"
-                  : "border-gray-600 text-gray-400 hover:border-gray-400"
-              }`}
-            >
-              grid
-            </button>
-            <button
-              onClick={() => setViewMode("featured")}
-              className={`px-4 py-2 text-sm border transition-all ${
-                viewMode === "featured"
-                  ? "border-[#d4af37] text-[#d4af37]"
-                  : "border-gray-600 text-gray-400 hover:border-gray-400"
-              }`}
-            >
-              featured
-            </button>
+          {/* Drop Zone */}
+          <div
+            className={`mx-auto max-w-4xl mb-8 border-2 border-dashed border-gray-600 rounded-lg p-12 text-center transition-all ${
+              isUploading ? 'border-[#d4af37] bg-[#d4af37]/10' : 'hover:border-[#d4af37] hover:bg-[#d4af37]/5'
+            }`}
+            onDrop={handleDrop}
+            onDragOver={handleDragOver}
+          >
+            {isUploading ? (
+              <div className="text-[#d4af37]">
+                <div className="animate-spin w-8 h-8 border-2 border-[#d4af37] border-t-transparent rounded-full mx-auto mb-4"></div>
+                <p>Uploading...</p>
+              </div>
+            ) : (
+              <div className="text-gray-400">
+                <div className="text-6xl mb-4">⬇</div>
+                <p className="text-xl mb-2">Drag images and videos here</p>
+                <p className="text-sm">From Photos, Desktop, Google Drive, anywhere</p>
+              </div>
+            )}
           </div>
 
-          {/* Tag Filter */}
-          <select
-            value={filterTag}
-            onChange={(e) => setFilterTag(e.target.value)}
-            className="bg-gray-900 border border-gray-600 text-white px-3 py-2 rounded"
-          >
-            <option value="">All Tags</option>
-            {allTags.map(tag => (
-              <option key={tag} value={tag}>{tag}</option>
-            ))}
-          </select>
-        </div>
-
-        <div className="text-sm text-gray-400 mb-6">
-          Showing {filteredWorks.length} works
-        </div>
-      </div>
-
-      {/* Timeline View */}
-      {viewMode === "timeline" && (
-        <div className="max-w-6xl mx-auto px-6 pb-20">
-          {filteredWorks.map((work, index) => (
-            <div
-              key={work.id}
-              className={`breath-section ${index % 2 === 0 ? "" : "reverse"}`}
-              style={{ minHeight: "auto", padding: "3rem 0" }}
+          {/* Controls */}
+          <div className="max-w-7xl mx-auto px-6 mb-8 flex justify-between items-center">
+            <div className="text-sm text-gray-400">
+              {filteredWorks.length} works
+            </div>
+            <select
+              value={filterTag}
+              onChange={(e) => setFilterTag(e.target.value)}
+              className="bg-gray-900 border border-gray-600 text-white px-3 py-2 rounded text-sm"
             >
-              <div className="breath-container">
-                <div className={`breath-grid ${index % 2 === 0 ? "" : "reverse"}`}>
-                  <div
-                    className="breath-visual interactive-mirror"
-                    onClick={() => setSelectedWork(work)}
+              <option value="">All Tags</option>
+              {allTags.map(tag => (
+                <option key={tag} value={tag}>{tag}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Grid */}
+          <div className="max-w-7xl mx-auto px-6 pb-20">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+              {filteredWorks.map((work) => (
+                <div key={work.id} className="group relative aspect-square bg-gray-900 rounded overflow-hidden">
+                  {/* Media */}
+                  <div 
+                    className="w-full h-full cursor-pointer"
+                    onClick={() => openPresentation(work)}
                   >
                     {work.type === "video" ? (
                       <video
                         src={work.mediaUrl}
-                        className="breath-video"
-                        autoPlay
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                         muted
                         loop
                       />
@@ -182,163 +262,177 @@ export default function GalleryPage() {
                         src={work.mediaUrl}
                         alt={work.title}
                         fill
-                        className="breath-image"
+                        className="object-cover group-hover:scale-105 transition-transform duration-300"
                       />
                     )}
-                    <div className="mirror-overlay">
-                      <p className="mirror-text">expand view</p>
-                    </div>
-                    {work.featured && (
-                      <div className="absolute top-4 right-4 bg-[#d4af37] text-black px-2 py-1 text-xs">
-                        featured
-                      </div>
-                    )}
                   </div>
-                  <div className="breath-content">
-                    <div className="breath-number">{formatDate(work.date)}</div>
-                    <h2 className="breath-title">{work.title}</h2>
-                    <p className="breath-text">{work.description}</p>
-                    {work.prompt && (
-                      <p className="breath-quote">"{work.prompt}"</p>
-                    )}
-                    <div className="flex flex-wrap gap-2 mt-4">
-                      {work.tags.map(tag => (
-                        <span key={tag} className="text-xs bg-gray-800 px-2 py-1 rounded">
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
-                    {work.edenUrl && (
-                      <a
-                        href={work.edenUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-block mt-4 text-[#d4af37] hover:text-white transition-colors text-sm"
+
+                  {/* Overlay */}
+                  <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-70 transition-all duration-300 flex flex-col justify-between p-3">
+                    {/* Top controls */}
+                    <div className="flex justify-between items-start opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          toggleFavorite(work)
+                        }}
+                        className={`p-2 rounded-full transition-colors ${
+                          work.featured ? 'bg-[#d4af37] text-black' : 'bg-black/50 text-white hover:bg-[#d4af37] hover:text-black'
+                        }`}
                       >
-                        view on eden →
-                      </a>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
+                        ★
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          deleteWork(work)
+                        }}
+                        className="p-2 rounded-full bg-red-600 text-white hover:bg-red-700 transition-colors"
+                      >
+                        ×
+                      </button>
+                    </div>
 
-      {/* Grid View */}
-      {(viewMode === "grid" || viewMode === "featured") && (
-        <div className="max-w-7xl mx-auto px-6 pb-20">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {filteredWorks.map((work) => (
-              <div
-                key={work.id}
-                className="relative aspect-square cursor-pointer group bg-gray-900 rounded overflow-hidden"
-                onClick={() => setSelectedWork(work)}
-              >
-                {work.type === "video" ? (
-                  <video
-                    src={work.mediaUrl}
-                    className="w-full h-full object-cover transition-all duration-300 group-hover:scale-105"
-                    autoPlay
-                    muted
-                    loop
-                  />
-                ) : (
-                  <Image
-                    src={work.mediaUrl}
-                    alt={work.title}
-                    fill
-                    className="object-cover transition-all duration-300 group-hover:scale-105"
-                  />
-                )}
-                <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-70 transition-all duration-300 flex flex-col justify-end p-4">
-                  <h3 className="text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300 font-serif text-lg mb-1">
-                    {work.title}
-                  </h3>
-                  <p className="text-gray-300 opacity-0 group-hover:opacity-100 transition-opacity duration-300 text-sm">
-                    {formatDate(work.date)}
-                  </p>
-                </div>
-                {work.featured && (
-                  <div className="absolute top-2 right-2 bg-[#d4af37] text-black px-2 py-1 text-xs rounded">
-                    featured
+                    {/* Bottom info */}
+                    <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+                      <h3 className="text-white font-serif text-sm mb-1 truncate">
+                        {editingWork === work.id ? (
+                          <input
+                            type="text"
+                            value={work.title}
+                            onChange={(e) => updateWork({ ...work, title: e.target.value })}
+                            onBlur={() => setEditingWork(null)}
+                            onKeyPress={(e) => e.key === 'Enter' && setEditingWork(null)}
+                            className="bg-transparent border-b border-white text-xs w-full"
+                            autoFocus
+                          />
+                        ) : (
+                          <span onClick={() => setEditingWork(work.id)}>{work.title}</span>
+                        )}
+                      </h3>
+                      <p className="text-gray-300 text-xs">{work.date}</p>
+                      <div className="flex flex-wrap gap-1 mt-1">
+                        {work.tags.slice(0, 2).map(tag => (
+                          <span key={tag} className="bg-gray-800 px-1 py-0.5 text-xs rounded">
+                            {tag}
+                          </span>
+                        ))}
+                        {work.tags.length > 2 && (
+                          <span className="bg-gray-800 px-1 py-0.5 text-xs rounded">
+                            +{work.tags.length - 2}
+                          </span>
+                        )}
+                      </div>
+                    </div>
                   </div>
-                )}
-              </div>
-            ))}
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
+        </>
       )}
 
-      {/* Modal */}
-      {selectedWork && (
-        <div
-          className="modal-overlay"
-          onClick={() => setSelectedWork(null)}
-        >
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-image-container">
-              {selectedWork.type === "video" ? (
-                <video
-                  src={selectedWork.mediaUrl}
-                  className="modal-video"
-                  controls
-                  autoPlay
-                />
-              ) : (
-                <Image
-                  src={selectedWork.mediaUrl}
-                  alt={selectedWork.title}
-                  fill
-                  className="modal-image object-contain"
-                />
-              )}
-            </div>
-            <button
-              className="modal-close"
-              onClick={() => setSelectedWork(null)}
-            >
-              ×
-            </button>
-            <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 text-center max-w-2xl">
-              <h3 className="text-white text-2xl font-serif mb-2">
-                {selectedWork.title}
-              </h3>
-              <p className="text-gray-400 mb-2">{formatDate(selectedWork.date)}</p>
-              <p className="text-gray-300 mb-4">{selectedWork.description}</p>
-              {selectedWork.prompt && (
-                <p className="text-[#d4af37] italic mb-4">"{selectedWork.prompt}"</p>
-              )}
-              <div className="flex flex-wrap justify-center gap-2 mb-4">
-                {selectedWork.tags.map(tag => (
-                  <span key={tag} className="text-xs bg-gray-800 px-2 py-1 rounded">
-                    {tag}
-                  </span>
-                ))}
+      {/* Presentation Mode */}
+      {viewMode === "presentation" && selectedWork && (
+        <div className="fixed inset-0 bg-black z-50 flex items-center justify-center">
+          {/* Navigation arrows */}
+          <button
+            onClick={() => {
+              if (selectedIndex > 0) {
+                const newIndex = selectedIndex - 1
+                setSelectedIndex(newIndex)
+                setSelectedWork(works[newIndex])
+              }
+            }}
+            disabled={selectedIndex === 0}
+            className="absolute left-8 top-1/2 transform -translate-y-1/2 text-4xl text-white hover:text-[#d4af37] disabled:opacity-30 disabled:cursor-not-allowed z-10"
+          >
+            ←
+          </button>
+
+          <button
+            onClick={() => {
+              if (selectedIndex < works.length - 1) {
+                const newIndex = selectedIndex + 1
+                setSelectedIndex(newIndex)
+                setSelectedWork(works[newIndex])
+              }
+            }}
+            disabled={selectedIndex === works.length - 1}
+            className="absolute right-8 top-1/2 transform -translate-y-1/2 text-4xl text-white hover:text-[#d4af37] disabled:opacity-30 disabled:cursor-not-allowed z-10"
+          >
+            →
+          </button>
+
+          {/* Close button */}
+          <button
+            onClick={() => {
+              setViewMode("grid")
+              setSelectedWork(null)
+            }}
+            className="absolute top-8 right-8 text-2xl text-white hover:text-[#d4af37] z-10"
+          >
+            ×
+          </button>
+
+          {/* Media */}
+          <div className="w-full h-full flex items-center justify-center p-8">
+            {selectedWork.type === "video" ? (
+              <video
+                src={selectedWork.mediaUrl}
+                controls
+                className="max-w-full max-h-full"
+                autoPlay
+              />
+            ) : (
+              <Image
+                src={selectedWork.mediaUrl}
+                alt={selectedWork.title}
+                width={1200}
+                height={800}
+                className="max-w-full max-h-full object-contain"
+              />
+            )}
+          </div>
+
+          {/* Info panel */}
+          <div className="absolute bottom-8 left-8 right-8 bg-black/80 backdrop-blur p-6 rounded">
+            <div className="flex justify-between items-start mb-4">
+              <div>
+                <h2 className="text-2xl font-serif text-white mb-2">{selectedWork.title}</h2>
+                <p className="text-gray-400">{selectedWork.date}</p>
               </div>
-              {selectedWork.edenUrl && (
-                <a
-                  href={selectedWork.edenUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-[#d4af37] hover:text-white transition-colors"
+              <div className="flex items-center gap-4">
+                <button
+                  onClick={() => toggleFavorite(selectedWork)}
+                  className={`p-2 rounded transition-colors ${
+                    selectedWork.featured ? 'bg-[#d4af37] text-black' : 'bg-gray-800 text-white hover:bg-[#d4af37] hover:text-black'
+                  }`}
                 >
-                  view on eden →
-                </a>
-              )}
+                  ★
+                </button>
+                <span className="text-sm text-gray-400">
+                  {selectedIndex + 1} of {works.length}
+                </span>
+              </div>
+            </div>
+            
+            {selectedWork.description && (
+              <p className="text-gray-300 mb-4">{selectedWork.description}</p>
+            )}
+
+            <div className="flex flex-wrap gap-2">
+              {selectedWork.tags.map(tag => (
+                <span key={tag} className="bg-gray-800 px-2 py-1 text-sm rounded">
+                  {tag}
+                </span>
+              ))}
+            </div>
+
+            <div className="mt-4 text-xs text-gray-500">
+              Use ← → arrow keys to navigate • ESC to exit
             </div>
           </div>
-        </div>
-      )}
-
-      {/* Empty State */}
-      {filteredWorks.length === 0 && (
-        <div className="text-center py-20">
-          <p className="text-gray-400 mb-4">No works found</p>
-          <Link href="/admin" className="text-[#d4af37] hover:text-white">
-            Add some works in admin →
-          </Link>
         </div>
       )}
     </div>
