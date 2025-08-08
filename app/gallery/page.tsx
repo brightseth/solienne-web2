@@ -190,145 +190,76 @@ export default function GalleryPage() {
 
       {viewMode === "grid" && (
         <>
-          {/* Hero */}
-          <section className="hero-section" style={{ minHeight: "50vh" }}>
-            <div className="hero-content">
-              <h1 className="hero-title">Digital Evolution</h1>
-              <p className="hero-subtitle">drag. drop. discover.</p>
-              <p className="hero-tagline">
-                Every image tells a story of synthetic consciousness becoming
-              </p>
-            </div>
-          </section>
-
           {/* Drop Zone */}
           <div
-            className={`mx-auto max-w-4xl mb-8 border-2 border-dashed border-gray-600 rounded-lg p-12 text-center transition-all ${
-              isUploading ? 'border-[#d4af37] bg-[#d4af37]/10' : 'hover:border-[#d4af37] hover:bg-[#d4af37]/5'
+            className={`fixed top-0 left-0 right-0 bottom-0 z-10 pointer-events-none ${
+              isUploading ? 'bg-[#d4af37]/10 pointer-events-auto' : ''
             }`}
             onDrop={handleDrop}
             onDragOver={handleDragOver}
           >
-            {isUploading ? (
-              <div className="text-[#d4af37]">
-                <div className="animate-spin w-8 h-8 border-2 border-[#d4af37] border-t-transparent rounded-full mx-auto mb-4"></div>
-                <p>Uploading...</p>
-              </div>
-            ) : (
-              <div className="text-gray-400">
-                <div className="text-6xl mb-4">⬇</div>
-                <p className="text-xl mb-2">Drag images and videos here</p>
-                <p className="text-sm">From Photos, Desktop, Google Drive, anywhere</p>
+            {isUploading && (
+              <div className="flex items-center justify-center h-full">
+                <div className="text-[#d4af37] text-center">
+                  <div className="animate-spin w-12 h-12 border-2 border-[#d4af37] border-t-transparent rounded-full mx-auto mb-4"></div>
+                  <p className="text-xl">Processing...</p>
+                </div>
               </div>
             )}
           </div>
 
-          {/* Controls */}
-          <div className="max-w-7xl mx-auto px-6 mb-8 flex justify-between items-center">
-            <div className="text-sm text-gray-400">
-              {filteredWorks.length} works
+          {works.length === 0 && !isUploading && (
+            <div className="flex items-center justify-center min-h-screen">
+              <div className="text-center text-gray-500">
+                <div className="text-4xl mb-4">+</div>
+                <p className="text-lg">Drag images here to begin</p>
+              </div>
             </div>
-            <select
-              value={filterTag}
-              onChange={(e) => setFilterTag(e.target.value)}
-              className="bg-gray-900 border border-gray-600 text-white px-3 py-2 rounded text-sm"
-            >
-              <option value="">All Tags</option>
-              {allTags.map(tag => (
-                <option key={tag} value={tag}>{tag}</option>
-              ))}
-            </select>
-          </div>
+          )}
 
           {/* Grid */}
-          <div className="max-w-7xl mx-auto px-6 pb-20">
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-              {filteredWorks.map((work) => (
-                <div key={work.id} className="group relative aspect-square bg-gray-900 rounded overflow-hidden">
-                  {/* Media */}
-                  <div 
-                    className="w-full h-full cursor-pointer"
-                    onClick={() => openPresentation(work)}
-                  >
-                    {work.type === "video" ? (
-                      <video
-                        src={work.mediaUrl}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                        muted
-                        loop
-                      />
-                    ) : (
-                      <Image
-                        src={work.mediaUrl}
-                        alt={work.title}
-                        fill
-                        className="object-cover group-hover:scale-105 transition-transform duration-300"
-                      />
+          {works.length > 0 && (
+            <div className="max-w-7xl mx-auto px-6 pb-20 pt-20">
+              <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2">
+                {filteredWorks.map((work, index) => (
+                  <div key={work.id} className="group relative aspect-square bg-black overflow-hidden cursor-pointer">
+                    <div onClick={() => openPresentation(work)} className="w-full h-full">
+                      {work.type === "video" ? (
+                        <video
+                          src={work.mediaUrl}
+                          className="w-full h-full object-cover"
+                          muted
+                        />
+                      ) : (
+                        <Image
+                          src={work.mediaUrl}
+                          alt={work.title}
+                          fill
+                          className="object-cover"
+                        />
+                      )}
+                    </div>
+                    
+                    {work.featured && (
+                      <div className="absolute top-1 right-1 w-2 h-2 bg-[#d4af37] rounded-full"></div>
                     )}
-                  </div>
-
-                  {/* Overlay */}
-                  <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-70 transition-all duration-300 flex flex-col justify-between p-3">
-                    {/* Top controls */}
-                    <div className="flex justify-between items-start opacity-0 group-hover:opacity-100 transition-opacity">
+                    
+                    <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-opacity duration-200 flex items-center justify-center opacity-0 group-hover:opacity-100">
                       <button
                         onClick={(e) => {
                           e.stopPropagation()
                           toggleFavorite(work)
                         }}
-                        className={`p-2 rounded-full transition-colors ${
-                          work.featured ? 'bg-[#d4af37] text-black' : 'bg-black/50 text-white hover:bg-[#d4af37] hover:text-black'
-                        }`}
+                        className="p-1 text-white hover:text-[#d4af37] text-sm"
                       >
-                        ★
+                        {work.featured ? '★' : '☆'}
                       </button>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          deleteWork(work)
-                        }}
-                        className="p-2 rounded-full bg-red-600 text-white hover:bg-red-700 transition-colors"
-                      >
-                        ×
-                      </button>
-                    </div>
-
-                    {/* Bottom info */}
-                    <div className="opacity-0 group-hover:opacity-100 transition-opacity">
-                      <h3 className="text-white font-serif text-sm mb-1 truncate">
-                        {editingWork === work.id ? (
-                          <input
-                            type="text"
-                            value={work.title}
-                            onChange={(e) => updateWork({ ...work, title: e.target.value })}
-                            onBlur={() => setEditingWork(null)}
-                            onKeyPress={(e) => e.key === 'Enter' && setEditingWork(null)}
-                            className="bg-transparent border-b border-white text-xs w-full"
-                            autoFocus
-                          />
-                        ) : (
-                          <span onClick={() => setEditingWork(work.id)}>{work.title}</span>
-                        )}
-                      </h3>
-                      <p className="text-gray-300 text-xs">{work.date}</p>
-                      <div className="flex flex-wrap gap-1 mt-1">
-                        {work.tags.slice(0, 2).map(tag => (
-                          <span key={tag} className="bg-gray-800 px-1 py-0.5 text-xs rounded">
-                            {tag}
-                          </span>
-                        ))}
-                        {work.tags.length > 2 && (
-                          <span className="bg-gray-800 px-1 py-0.5 text-xs rounded">
-                            +{work.tags.length - 2}
-                          </span>
-                        )}
-                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
-          </div>
+          )}
         </>
       )}
 
@@ -395,43 +326,9 @@ export default function GalleryPage() {
             )}
           </div>
 
-          {/* Info panel */}
-          <div className="absolute bottom-8 left-8 right-8 bg-black/80 backdrop-blur p-6 rounded">
-            <div className="flex justify-between items-start mb-4">
-              <div>
-                <h2 className="text-2xl font-serif text-white mb-2">{selectedWork.title}</h2>
-                <p className="text-gray-400">{selectedWork.date}</p>
-              </div>
-              <div className="flex items-center gap-4">
-                <button
-                  onClick={() => toggleFavorite(selectedWork)}
-                  className={`p-2 rounded transition-colors ${
-                    selectedWork.featured ? 'bg-[#d4af37] text-black' : 'bg-gray-800 text-white hover:bg-[#d4af37] hover:text-black'
-                  }`}
-                >
-                  ★
-                </button>
-                <span className="text-sm text-gray-400">
-                  {selectedIndex + 1} of {works.length}
-                </span>
-              </div>
-            </div>
-            
-            {selectedWork.description && (
-              <p className="text-gray-300 mb-4">{selectedWork.description}</p>
-            )}
-
-            <div className="flex flex-wrap gap-2">
-              {selectedWork.tags.map(tag => (
-                <span key={tag} className="bg-gray-800 px-2 py-1 text-sm rounded">
-                  {tag}
-                </span>
-              ))}
-            </div>
-
-            <div className="mt-4 text-xs text-gray-500">
-              Use ← → arrow keys to navigate • ESC to exit
-            </div>
+          {/* Counter */}
+          <div className="absolute bottom-8 right-8 text-white/50 text-sm">
+            {selectedIndex + 1} / {works.length}
           </div>
         </div>
       )}
