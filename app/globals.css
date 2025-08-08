@@ -38,6 +38,51 @@ body {
   letter-spacing: 0.01em;
 }
 
+/* Hide video play buttons and controls in gallery */
+video::-webkit-media-controls {
+  display: none !important;
+}
+
+video::-webkit-media-controls-play-button {
+  display: none !important;
+}
+
+video::-webkit-media-controls-start-playback-button {
+  display: none !important;
+}
+
+/* Hide any default browser image/video overlays */
+img::before,
+img::after,
+video::before,
+video::after {
+  display: none !important;
+}
+
+/* Ensure no pointer cursor on non-interactive elements */
+.gallery-image {
+  pointer-events: none;
+}
+
+/* Remove any possible button overlays */
+button[type="button"]:not([class*="nav"]):not([class*="upload"]):not([id]) {
+  display: none !important;
+}
+
+/* Hide all potential overlay elements inside grid items */
+.aspect-square button,
+.aspect-square [role="button"],
+.aspect-square .button {
+  display: none !important;
+}
+
+/* Specifically target any play button styles */
+[aria-label*="play"],
+[title*="play"],
+.play-button {
+  display: none !important;
+}
+
 /* Navigation */
 .navigation {
   position: fixed;

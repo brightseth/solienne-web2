@@ -301,14 +301,18 @@ export default function GalleryPage() {
                           src={work.mediaUrl}
                           className="w-full h-full object-cover"
                           muted
+                          playsInline
+                          preload="metadata"
                         />
                       ) : (
                         <img
                           src={work.mediaUrl}
-                          alt={work.title}
+                          alt=""
                           className="w-full h-full object-cover"
+                          loading="lazy"
                           onError={(e) => {
-                            (e.target as HTMLImageElement).style.display = 'none'
+                            const target = e.target as HTMLImageElement
+                            target.style.visibility = 'hidden'
                           }}
                         />
                       )}
