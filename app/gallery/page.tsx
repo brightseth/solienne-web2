@@ -268,6 +268,30 @@ export default function GalleryPage() {
           {/* Grid */}
           {works.length > 0 && (
             <div className="max-w-7xl mx-auto px-6 pb-20 pt-20">
+              {/* Upload button */}
+              <div className="mb-6 text-center">
+                <input
+                  type="file"
+                  accept="image/*,video/*"
+                  multiple
+                  onChange={async (e) => {
+                    const files = Array.from(e.target.files || [])
+                    if (files.length > 0) {
+                      const fakeEvent = {
+                        preventDefault: () => {},
+                        dataTransfer: { files }
+                      } as any
+                      handleDrop(fakeEvent)
+                    }
+                  }}
+                  className="hidden"
+                  id="file-input-main"
+                />
+                <label htmlFor="file-input-main" className="cursor-pointer text-white/50 hover:text-[#d4af37] border border-gray-700 hover:border-[#d4af37] px-4 py-2 rounded inline-block transition-colors">
+                  + Add Images
+                </label>
+              </div>
+              
               <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2">
                 {filteredWorks.map((work, index) => (
                   <div key={work.id} className="group relative aspect-square bg-black overflow-hidden cursor-pointer">
