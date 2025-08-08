@@ -46,24 +46,37 @@ export default function GalleryPage() {
 
   const handleDrop = useCallback(async (e: React.DragEvent) => {
     e.preventDefault()
-    setIsUploading(true)
-
+    console.log('Drop triggered!')
+    
     const files = Array.from(e.dataTransfer.files)
+    console.log('Files dropped:', files.length, files.map(f => f.name))
+    
+    if (files.length === 0) return
+    
+    setIsUploading(true)
     
     for (const file of files) {
+      console.log('Processing file:', file.name, file.type)
+      
       if (!file.type.startsWith('image/') && !file.type.startsWith('video/')) {
+        console.log('Skipping non-media file:', file.name)
         continue
       }
 
       try {
+        console.log('Uploading:', file.name)
+        
         // Upload to Vercel Blob
         const response = await fetch(`/api/upload?filename=${encodeURIComponent(file.name)}`, {
           method: 'POST',
           body: file,
         })
 
+        console.log('Upload response:', response.status, response.statusText)
+
         if (response.ok) {
-          const { url } = await response.json()
+          const result = await response.json()
+          console.log('Upload result:', result)
           
           // Create work entry
           const work: Work = {
@@ -72,7 +85,7 @@ export default function GalleryPage() {
             description: "",
             date: new Date().toISOString().split('T')[0],
             type: file.type.startsWith('video/') ? 'video' : 'image',
-            mediaUrl: url,
+            mediaUrl: result.url,
             size: file.size,
             filename: file.name,
             tags: [],
@@ -80,18 +93,25 @@ export default function GalleryPage() {
             uploadedAt: new Date().toISOString()
           }
 
+          console.log('Saving work:', work)
+
           // Save work to server
-          await fetch('/api/works-sync', {
+          const saveResponse = await fetch('/api/works-sync', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(work)
           })
           
+          console.log('Save response:', saveResponse.status)
+          
           // Also add locally for immediate feedback
           setWorks(currentWorks => [work, ...currentWorks])
+        } else {
+          const errorText = await response.text()
+          console.error('Upload failed:', response.status, errorText)
         }
       } catch (error) {
-        console.error('Upload failed:', error)
+        console.error('Upload error:', error)
       }
     }
 
@@ -219,7 +239,28 @@ export default function GalleryPage() {
             <div className="flex items-center justify-center min-h-screen">
               <div className="text-center text-gray-500">
                 <div className="text-4xl mb-4">+</div>
-                <p className="text-lg">Drag images here to begin</p>
+                <p className="text-lg mb-4">Drag images here to begin</p>
+                <p className="text-sm mb-4">or</p>
+                <input
+                  type="file"
+                  accept="image/*,video/*"
+                  multiple
+                  onChange={async (e) => {
+                    const files = Array.from(e.target.files || [])
+                    if (files.length > 0) {
+                      const fakeEvent = {
+                        preventDefault: () => {},
+                        dataTransfer: { files }
+                      } as any
+                      handleDrop(fakeEvent)
+                    }
+                  }}
+                  className="hidden"
+                  id="file-input"
+                />
+                <label htmlFor="file-input" className="cursor-pointer text-[#d4af37] hover:text-white border border-[#d4af37] px-4 py-2 rounded">
+                  Choose Files
+                </label>
               </div>
             </div>
           )}
