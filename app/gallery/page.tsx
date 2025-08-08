@@ -29,13 +29,14 @@ export default function GalleryPage() {
 
   const loadWorks = async () => {
     try {
-      const response = await fetch('/api/works')
+      const response = await fetch('/data/eden-works.json')
       if (response.ok) {
         const data = await response.json()
         setWorks(data.works || [])
       }
     } catch (error) {
       console.log('Error loading works:', error)
+      setWorks([])
     }
   }
 
@@ -79,12 +80,8 @@ export default function GalleryPage() {
             uploadedAt: new Date().toISOString()
           }
 
-          // Save work
-          await fetch('/api/works', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(work)
-          })
+          // Add work locally
+          setWorks(currentWorks => [work, ...currentWorks])
         }
       } catch (error) {
         console.error('Upload failed:', error)
@@ -101,12 +98,10 @@ export default function GalleryPage() {
 
   const updateWork = async (work: Work) => {
     try {
-      await fetch('/api/works', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(work)
-      })
-      loadWorks()
+      // For now, just update locally - you can implement server updates later
+      setWorks(currentWorks => 
+        currentWorks.map(w => w.id === work.id ? work : w)
+      )
     } catch (error) {
       console.error('Failed to update work:', error)
     }
@@ -128,8 +123,7 @@ export default function GalleryPage() {
 
   const deleteWork = async (work: Work) => {
     if (confirm('Delete this work?')) {
-      await fetch(`/api/works?id=${work.id}`, { method: 'DELETE' })
-      loadWorks()
+      setWorks(currentWorks => currentWorks.filter(w => w.id !== work.id))
       if (selectedWork?.id === work.id) {
         setSelectedWork(null)
       }
