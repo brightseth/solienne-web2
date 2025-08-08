@@ -23,9 +23,14 @@
   box-sizing: border-box;
 }
 
+html {
+  background: #000000 !important;
+}
+
 body {
   font-family: var(--primary-font);
-  background: var(--void-black);
+  background: #000000 !important;
+  background-color: #000000 !important;
   color: var(--pure-white);
   line-height: 1.6;
   overflow-x: hidden;
