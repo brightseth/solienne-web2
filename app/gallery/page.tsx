@@ -247,43 +247,37 @@ export default function GalleryPage() {
 
       {/* Presentation Mode */}
       {viewMode === "presentation" && selectedWork && (
-        <div className="fixed inset-0 bg-black z-50">
-          {/* Left arrow */}
-          <div className="absolute left-0 top-0 bottom-0 w-20 flex items-center justify-center">
+        <div className="fixed inset-0 bg-black z-50 flex items-center justify-center">
+          {/* Left navigation */}
+          {selectedIndex > 0 && (
             <button
               onClick={() => {
-                if (selectedIndex > 0) {
-                  const newIndex = selectedIndex - 1
-                  setSelectedIndex(newIndex)
-                  setSelectedWork(works[newIndex])
-                }
+                const newIndex = selectedIndex - 1
+                setSelectedIndex(newIndex)
+                setSelectedWork(works[newIndex])
               }}
-              disabled={selectedIndex === 0}
-              className="text-4xl text-white hover:text-[#d4af37] disabled:opacity-30 disabled:cursor-not-allowed"
+              className="absolute left-4 text-3xl text-white/70 hover:text-[#d4af37] z-10"
             >
-              {selectedIndex > 0 ? '←' : ''}
+              ←
             </button>
-          </div>
+          )}
 
-          {/* Right arrow */}
-          <div className="absolute right-0 top-0 bottom-0 w-20 flex items-center justify-center">
+          {/* Right navigation */}
+          {selectedIndex < works.length - 1 && (
             <button
               onClick={() => {
-                if (selectedIndex < works.length - 1) {
-                  const newIndex = selectedIndex + 1
-                  setSelectedIndex(newIndex)
-                  setSelectedWork(works[newIndex])
-                }
+                const newIndex = selectedIndex + 1
+                setSelectedIndex(newIndex)
+                setSelectedWork(works[newIndex])
               }}
-              disabled={selectedIndex === works.length - 1}
-              className="text-4xl text-white hover:text-[#d4af37] disabled:opacity-30 disabled:cursor-not-allowed"
+              className="absolute right-4 text-3xl text-white/70 hover:text-[#d4af37] z-10"
             >
-              {selectedIndex < works.length - 1 ? '→' : ''}
+              →
             </button>
-          </div>
+          )}
 
-          {/* Media */}
-          <div className="absolute left-20 right-20 top-0 bottom-0 flex items-center justify-center">
+          {/* Media container */}
+          <div className="max-w-[80vw] max-h-[80vh] flex items-center justify-center">
             {selectedWork.type === "video" ? (
               <video
                 src={selectedWork.mediaUrl}
