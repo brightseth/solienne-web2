@@ -29,7 +29,7 @@ export default function GalleryPage() {
 
   const loadWorks = async () => {
     try {
-      const response = await fetch('/data/eden-works.json')
+      const response = await fetch('/api/works-sync')
       if (response.ok) {
         const data = await response.json()
         setWorks(data.works || [])
@@ -80,7 +80,14 @@ export default function GalleryPage() {
             uploadedAt: new Date().toISOString()
           }
 
-          // Add work locally
+          // Save work to server
+          await fetch('/api/works-sync', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(work)
+          })
+          
+          // Also add locally for immediate feedback
           setWorks(currentWorks => [work, ...currentWorks])
         }
       } catch (error) {
@@ -98,7 +105,14 @@ export default function GalleryPage() {
 
   const updateWork = async (work: Work) => {
     try {
-      // For now, just update locally - you can implement server updates later
+      // Save to server
+      await fetch('/api/works-sync', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(work)
+      })
+      
+      // Update locally
       setWorks(currentWorks => 
         currentWorks.map(w => w.id === work.id ? work : w)
       )
@@ -123,6 +137,10 @@ export default function GalleryPage() {
 
   const deleteWork = async (work: Work) => {
     if (confirm('Delete this work?')) {
+      // Delete from server
+      await fetch(`/api/works-sync?id=${work.id}`, { method: 'DELETE' })
+      
+      // Remove locally
       setWorks(currentWorks => currentWorks.filter(w => w.id !== work.id))
       if (selectedWork?.id === work.id) {
         setSelectedWork(null)
