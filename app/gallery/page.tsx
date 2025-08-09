@@ -362,8 +362,9 @@ export default function GalleryPage() {
                         e.stopPropagation()
                         deleteWork(work)
                       }}
-                      className="absolute top-1 left-1 w-5 h-5 bg-red-600/80 hover:bg-red-600 text-white text-xs rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center"
+                      className="delete-btn absolute top-1 left-1 w-6 h-6 bg-red-600 text-white text-sm rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center z-10"
                       title="Delete image"
+                      style={{ display: 'flex' }}
                     >
                       ×
                     </button>

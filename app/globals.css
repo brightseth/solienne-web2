@@ -91,6 +91,12 @@ label.upload-button {
   opacity: 1 !important;
 }
 
+/* Ensure delete button is always visible */
+.delete-btn {
+  display: flex !important;
+  visibility: visible !important;
+}
+
 /* Navigation */
 .navigation {
   position: fixed;
