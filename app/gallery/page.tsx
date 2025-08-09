@@ -26,6 +26,7 @@ export default function GalleryPage() {
   const [isUploading, setIsUploading] = useState(false)
   const [editingWork, setEditingWork] = useState<string | null>(null)
   const [filterTag, setFilterTag] = useState("")
+  const [uploadStatus, setUploadStatus] = useState("")
 
   const loadWorks = async () => {
     try {
@@ -54,16 +55,21 @@ export default function GalleryPage() {
     if (files.length === 0) return
     
     setIsUploading(true)
+    setUploadStatus(`Uploading ${files.length} file(s)...`)
+    
+    let successCount = 0
     
     for (const file of files) {
       console.log('Processing file:', file.name, file.type)
       
       if (!file.type.startsWith('image/') && !file.type.startsWith('video/')) {
         console.log('Skipping non-media file:', file.name)
+        setUploadStatus(`Skipping ${file.name} (not an image/video)`)
         continue
       }
 
       try {
+        setUploadStatus(`Uploading ${file.name}...`)
         console.log('Uploading:', file.name)
         
         // Upload to Vercel Blob
@@ -93,6 +99,7 @@ export default function GalleryPage() {
             uploadedAt: new Date().toISOString()
           }
 
+          setUploadStatus(`Saving ${file.name}...`)
           console.log('Saving work:', work)
 
           // Save work to server
@@ -104,18 +111,31 @@ export default function GalleryPage() {
           
           console.log('Save response:', saveResponse.status)
           
-          // Also add locally for immediate feedback
-          setWorks(currentWorks => [work, ...currentWorks])
+          if (saveResponse.ok) {
+            successCount++
+            setUploadStatus(`✓ Uploaded ${file.name}`)
+            // Also add locally for immediate feedback
+            setWorks(currentWorks => [work, ...currentWorks])
+          } else {
+            setUploadStatus(`✗ Failed to save ${file.name}`)
+          }
         } else {
           const errorText = await response.text()
           console.error('Upload failed:', response.status, errorText)
+          setUploadStatus(`✗ Upload failed: ${file.name}`)
         }
       } catch (error) {
         console.error('Upload error:', error)
+        setUploadStatus(`✗ Error uploading ${file.name}`)
       }
     }
 
     setIsUploading(false)
+    setUploadStatus(`Complete! ${successCount} image(s) uploaded.`)
+    
+    // Clear status after 3 seconds
+    setTimeout(() => setUploadStatus(""), 3000)
+    
     loadWorks() // Refresh works
   }, [])
 
@@ -235,7 +255,7 @@ export default function GalleryPage() {
                 id="nav-file-input"
               />
               <label htmlFor="nav-file-input" className="nav-link cursor-pointer">
-                + add
+                {isUploading ? 'uploading...' : '+ add'}
               </label>
             </li>
           </ul>
@@ -326,6 +346,13 @@ export default function GalleryPage() {
             </div>
           )}
 
+        </div>
+      )}
+
+      {/* Upload Status Toast */}
+      {uploadStatus && (
+        <div className="fixed top-20 right-4 bg-black/90 backdrop-blur border border-gray-700 text-white px-4 py-2 rounded text-sm z-30">
+          {uploadStatus}
         </div>
       )}
 
