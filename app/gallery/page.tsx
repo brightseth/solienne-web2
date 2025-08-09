@@ -174,7 +174,7 @@ export default function GalleryPage() {
     setTimeout(() => setUploadStatus(""), 5000)
   }, [draggedItem])
 
-  const handleDragOver = (e: React.DragEvent) => {
+  const handleFileDragOver = (e: React.DragEvent) => {
     e.preventDefault()
   }
 
@@ -400,7 +400,7 @@ export default function GalleryPage() {
         <div
           className="min-h-screen"
           onDrop={handleDrop}
-          onDragOver={handleDragOver}
+          onDragOver={handleFileDragOver}
         >
           {isUploading && (
             <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center">
