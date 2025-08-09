@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useMemo } from "react"
 import Image from "next/image"
 import Link from "next/link"
 
@@ -34,7 +34,7 @@ export default function GalleryPage() {
   const [draggedItem, setDraggedItem] = useState<Work | null>(null)
   const [draggedOverIndex, setDraggedOverIndex] = useState<number | null>(null)
 
-  const loadWorks = async () => {
+  const loadWorks = useCallback(async () => {
     try {
       setIsLoading(true)
       setError(null)
@@ -46,20 +46,20 @@ export default function GalleryPage() {
         const data = await response.json()
         console.log('Loaded works data:', data)
         console.log('Number of works:', data.works?.length || 0)
-        setWorks(data.works || [])
+        setWorks(Array.isArray(data.works) ? data.works : [])
       } else {
         console.error('Failed to load works:', response.status, response.statusText)
         setError(`Failed to load gallery (${response.status})`)
         setWorks([])
       }
     } catch (error) {
-      console.log('Error loading works:', error)
+      console.error('Error loading works:', error)
       setError('Failed to connect to gallery')
       setWorks([])
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [])
 
   useEffect(() => {
     loadWorks()
@@ -266,30 +266,32 @@ export default function GalleryPage() {
 
     window.addEventListener('keydown', handleKeyPress)
     return () => window.removeEventListener('keydown', handleKeyPress)
-  }, [viewMode, selectedIndex, filteredWorks])
+  }, [viewMode, selectedIndex, filteredWorks, openPresentation])
 
-  const filteredWorks = works.filter(work => {
-    const matchesTag = !filterTag || work.tags.includes(filterTag)
-    const matchesSearch = !searchQuery || 
-      work.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      work.description.toLowerCase().includes(searchQuery.toLowerCase())
-    return matchesTag && matchesSearch
-  }).sort((a, b) => {
-    if (sortBy === "date") {
-      return new Date(b.date).getTime() - new Date(a.date).getTime()
-    } else {
-      return a.title.localeCompare(b.title)
-    }
-  })
+  const filteredWorks = useMemo(() => 
+    works.filter(work => {
+      const matchesTag = !filterTag || work.tags.includes(filterTag)
+      const matchesSearch = !searchQuery || 
+        work.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        work.description.toLowerCase().includes(searchQuery.toLowerCase())
+      return matchesTag && matchesSearch
+    }).sort((a, b) => {
+      if (sortBy === "date") {
+        return new Date(b.date).getTime() - new Date(a.date).getTime()
+      } else {
+        return a.title.localeCompare(b.title)
+      }
+    }), [works, filterTag, searchQuery, sortBy]
+  )
 
-  const allTags = Array.from(new Set(works.flatMap(work => work.tags)))
+  const allTags = useMemo(() => Array.from(new Set(works.flatMap(work => work.tags))), [works])
 
-  const openPresentation = (work: Work) => {
-    const index = filteredWorks.findIndex(w => w.id === work.id)
+  const openPresentation = useCallback((work: Work) => {
+    const index = works.findIndex(w => w.id === work.id)
     setSelectedIndex(index)
     setSelectedWork(work)
     setViewMode("presentation")
-  }
+  }, [works])
 
   const handleDragStart = (e: React.DragEvent, work: Work) => {
     console.log('Drag start:', work.title)
@@ -361,6 +363,27 @@ export default function GalleryPage() {
       setTimeout(() => setUploadStatus(''), 3000)
     }
   }
+
+  // Error boundary for client-side errors
+  useEffect(() => {
+    const handleError = (event: ErrorEvent) => {
+      console.error('Client-side error:', event.error)
+      setError('Something went wrong. Please refresh the page.')
+    }
+    
+    const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
+      console.error('Unhandled promise rejection:', event.reason)
+      setError('Something went wrong. Please refresh the page.')
+    }
+
+    window.addEventListener('error', handleError)
+    window.addEventListener('unhandledrejection', handleUnhandledRejection)
+    
+    return () => {
+      window.removeEventListener('error', handleError)
+      window.removeEventListener('unhandledrejection', handleUnhandledRejection)
+    }
+  }, [])
 
   return (
     <div className="min-h-screen bg-black text-white">
