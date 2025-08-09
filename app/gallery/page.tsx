@@ -77,63 +77,55 @@ export default function GalleryPage() {
       }
 
       try {
-        setUploadStatus(`Uploading ${file.name}...`)
-        console.log('Uploading:', file.name)
+        setUploadStatus(`Processing ${file.name}...`)
+        console.log('Processing:', file.name)
         
-        // Upload to Vercel Blob
-        const response = await fetch(`/api/upload?filename=${encodeURIComponent(file.name)}`, {
-          method: 'POST',
-          body: file,
+        // Convert file to data URL (base64) instead of uploading to Vercel Blob
+        const reader = new FileReader()
+        const dataUrl = await new Promise<string>((resolve) => {
+          reader.onload = (e) => resolve(e.target?.result as string)
+          reader.readAsDataURL(file)
         })
 
-        console.log('Upload response:', response.status, response.statusText)
+        console.log('File converted to data URL, length:', dataUrl.length)
+        
+        // Create work entry with data URL
+        const work: Work = {
+          id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+          title: file.name.replace(/\.[^/.]+$/, ""),
+          description: "",
+          date: new Date().toISOString().split('T')[0],
+          type: file.type.startsWith('video/') ? 'video' : 'image',
+          mediaUrl: dataUrl, // Use data URL instead of Vercel Blob URL
+          size: file.size,
+          filename: file.name,
+          tags: [],
+          featured: false,
+          uploadedAt: new Date().toISOString()
+        }
 
-        if (response.ok) {
-          const result = await response.json()
-          console.log('Upload result:', result)
-          
-          // Create work entry
-          const work: Work = {
-            id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
-            title: file.name.replace(/\.[^/.]+$/, ""),
-            description: "",
-            date: new Date().toISOString().split('T')[0],
-            type: file.type.startsWith('video/') ? 'video' : 'image',
-            mediaUrl: result.url,
-            size: file.size,
-            filename: file.name,
-            tags: [],
-            featured: false,
-            uploadedAt: new Date().toISOString()
-          }
+        setUploadStatus(`Saving ${file.name}...`)
+        console.log('Saving work with data URL:', work.title)
 
-          setUploadStatus(`Saving ${file.name}...`)
-          console.log('Saving work:', work)
-
-          // Save work to server
-          const saveResponse = await fetch('/api/works-sync', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(work)
-          })
-          
-          console.log('Save response:', saveResponse.status)
-          
-          if (saveResponse.ok) {
-            successCount++
-            setUploadStatus(`✓ Uploaded ${file.name}`)
-            // Add locally for immediate feedback
-            setWorks(currentWorks => [work, ...currentWorks])
-            console.log('Work added to local state, total works:', works.length + 1)
-          } else {
-            const errorText = await saveResponse.text()
-            console.error('Save failed:', saveResponse.status, errorText)
-            setUploadStatus(`✗ Failed to save ${file.name}`)
-          }
+        // Save work to server
+        const saveResponse = await fetch('/api/works-sync', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(work)
+        })
+        
+        console.log('Save response:', saveResponse.status)
+        
+        if (saveResponse.ok) {
+          successCount++
+          setUploadStatus(`✓ Uploaded ${file.name}`)
+          // Add locally for immediate feedback
+          setWorks(currentWorks => [work, ...currentWorks])
+          console.log('Work added to local state, total works:', works.length + 1)
         } else {
-          const errorText = await response.text()
-          console.error('Upload failed:', response.status, errorText)
-          setUploadStatus(`✗ Upload failed: ${file.name}`)
+          const errorText = await saveResponse.text()
+          console.error('Save failed:', saveResponse.status, errorText)
+          setUploadStatus(`✗ Failed to save ${file.name}`)
         }
       } catch (error) {
         console.error('Upload error:', error)
