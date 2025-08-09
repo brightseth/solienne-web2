@@ -30,10 +30,18 @@ export default function GalleryPage() {
 
   const loadWorks = async () => {
     try {
+      console.log('Loading works from /api/works-sync...')
       const response = await fetch('/api/works-sync')
+      console.log('Load response:', response.status)
+      
       if (response.ok) {
         const data = await response.json()
+        console.log('Loaded works data:', data)
+        console.log('Number of works:', data.works?.length || 0)
         setWorks(data.works || [])
+      } else {
+        console.error('Failed to load works:', response.status, response.statusText)
+        setWorks([])
       }
     } catch (error) {
       console.log('Error loading works:', error)
@@ -114,9 +122,12 @@ export default function GalleryPage() {
           if (saveResponse.ok) {
             successCount++
             setUploadStatus(`✓ Uploaded ${file.name}`)
-            // Also add locally for immediate feedback
+            // Add locally for immediate feedback
             setWorks(currentWorks => [work, ...currentWorks])
+            console.log('Work added to local state, total works:', works.length + 1)
           } else {
+            const errorText = await saveResponse.text()
+            console.error('Save failed:', saveResponse.status, errorText)
             setUploadStatus(`✗ Failed to save ${file.name}`)
           }
         } else {
@@ -133,10 +144,15 @@ export default function GalleryPage() {
     setIsUploading(false)
     setUploadStatus(`Complete! ${successCount} image(s) uploaded.`)
     
-    // Clear status after 3 seconds
-    setTimeout(() => setUploadStatus(""), 3000)
+    console.log('Upload complete, refreshing works list...')
     
-    loadWorks() // Refresh works
+    // Force refresh from server
+    await loadWorks()
+    
+    console.log('Works after refresh:', works.length)
+    
+    // Clear status after 5 seconds
+    setTimeout(() => setUploadStatus(""), 5000)
   }, [])
 
   const handleDragOver = (e: React.DragEvent) => {
