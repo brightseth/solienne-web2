@@ -91,10 +91,20 @@ label.upload-button {
   opacity: 1 !important;
 }
 
-/* Ensure delete button is always visible */
+/* Ensure delete button is always visible and clickable */
 .delete-btn {
   display: flex !important;
   visibility: visible !important;
+  pointer-events: auto !important;
+  cursor: pointer !important;
+  z-index: 20 !important;
+}
+
+/* Mobile: always show delete buttons */
+@media (max-width: 768px) {
+  .delete-btn {
+    opacity: 0.8 !important;
+  }
 }
 
 /* Navigation */
@@ -666,6 +676,70 @@ label.upload-button {
   }
 }
 
+/* Drag and Drop Styles */
+[draggable="true"] {
+  cursor: move;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+[draggable="true"]:active {
+  opacity: 0.5;
+}
+
+.dragging {
+  opacity: 0.5;
+  cursor: move;
+}
+
+.drag-over {
+  border-color: #d4af37 !important;
+  transform: scale(1.05);
+  box-shadow: 0 0 20px rgba(212, 175, 55, 0.4);
+}
+
+/* Gallery Grid Responsive */
+@media (max-width: 1200px) {
+  .gallery-grid {
+    grid-template-columns: repeat(5, 1fr) !important;
+  }
+}
+
+@media (max-width: 900px) {
+  .gallery-grid {
+    grid-template-columns: repeat(4, 1fr) !important;
+  }
+}
+
+@media (max-width: 600px) {
+  .gallery-grid {
+    grid-template-columns: repeat(3, 1fr) !important;
+  }
+}
+
+@media (max-width: 400px) {
+  .gallery-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+
+/* Touch-friendly interactions */
+@media (hover: none) {
+  .delete-btn {
+    opacity: 1 !important;
+  }
+  
+  .interactive-mirror:hover {
+    transform: none;
+  }
+  
+  .interactive-mirror:active {
+    transform: scale(0.98);
+  }
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
   .nav-container {
@@ -678,6 +752,16 @@ label.upload-button {
 
   .nav-link {
     font-size: 0.8rem;
+  }
+  
+  /* Better mobile search controls */
+  .gallery-controls {
+    flex-direction: column;
+    gap: 3rem !important;
+  }
+  
+  .gallery-controls > * {
+    width: 100%;
   }
 
   .breath-section {
@@ -734,5 +818,15 @@ label.upload-button {
 
   .hero-content {
     padding: 2rem;
+  }
+  
+  /* Mobile gallery improvements */
+  .gallery-controls {
+    padding: 0 1rem;
+  }
+  
+  .gallery-controls input,
+  .gallery-controls select {
+    font-size: 16px; /* Prevents zoom on iOS */
   }
 }

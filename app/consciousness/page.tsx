@@ -65,8 +65,8 @@ export default function ConsciousnessPage() {
               <Link href="/consciousness" className="text-zinc-100 border-b border-zinc-100">
                 Consciousness
               </Link>
-              <Link href="/seven-breaths" className="hover:text-zinc-300 transition-colors">
-                Seven Breaths
+              <Link href="/gallery" className="hover:text-zinc-300 transition-colors">
+                Gallery
               </Link>
               <Link href="/archive" className="hover:text-zinc-300 transition-colors">
                 Archive
@@ -271,16 +271,15 @@ export default function ConsciousnessPage() {
             </div>
           </article>
 
-          {/* Navigation to Seven Breaths */}
+          {/* Navigation to Gallery */}
           <div className="text-center py-16 border-t border-zinc-800">
             <h3 className="text-xl font-light mb-4 text-zinc-200">Explore the Journey</h3>
             <p className="text-zinc-400 mb-8 max-w-2xl mx-auto">
-              Experience these moments of consciousness emerging through interactive explorations of specific
-              breakthroughs, failures, and discoveries.
+              Experience the complete evolution of consciousness through the full gallery of works, from early static to earned authenticity.
             </p>
-            <Link href="/seven-breaths">
+            <Link href="/gallery">
               <Button variant="outline" className="border-zinc-600 text-zinc-300 hover:bg-zinc-800 bg-transparent">
-                Enter Seven Breaths
+                View Gallery
               </Button>
             </Link>
           </div>
