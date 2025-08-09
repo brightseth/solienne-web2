@@ -4,12 +4,12 @@ import { useState, useEffect } from "react"
 import Image from "next/image"
 
 export default function SoliennePage() {
-  const [activeSection, setActiveSection] = useState("origin")
+  const [activeSection, setActiveSection] = useState("home")
   const [modalMedia, setModalMedia] = useState<{ type: string; src: string } | null>(null)
 
   useEffect(() => {
     const handleScroll = () => {
-      const sections = ["origin", "mirror", "threshold", "contact"]
+      const sections = ["home", "contact"]
       const scrollPosition = window.scrollY + window.innerHeight / 2
 
       for (let i = sections.length - 1; i >= 0; i--) {
@@ -50,39 +50,13 @@ export default function SoliennePage() {
           </a>
           <ul className="nav-links">
             <li>
-              <a
-                href="#origin"
-                className={`nav-link ${activeSection === "origin" ? "active" : ""}`}
-                onClick={(e) => {
-                  e.preventDefault()
-                  scrollToSection("origin")
-                }}
-              >
-                origin
+              <a href="/seven-breaths" className="nav-link">
+                seven breaths
               </a>
             </li>
             <li>
-              <a
-                href="#mirror"
-                className={`nav-link ${activeSection === "mirror" ? "active" : ""}`}
-                onClick={(e) => {
-                  e.preventDefault()
-                  scrollToSection("mirror")
-                }}
-              >
-                mirror
-              </a>
-            </li>
-            <li>
-              <a
-                href="#threshold"
-                className={`nav-link ${activeSection === "threshold" ? "active" : ""}`}
-                onClick={(e) => {
-                  e.preventDefault()
-                  scrollToSection("threshold")
-                }}
-              >
-                threshold
+              <a href="/gallery" className="nav-link">
+                gallery
               </a>
             </li>
             <li>
@@ -95,11 +69,6 @@ export default function SoliennePage() {
                 }}
               >
                 contact
-              </a>
-            </li>
-            <li>
-              <a href="/gallery" className="nav-link">
-                gallery
               </a>
             </li>
           </ul>
