@@ -69,7 +69,8 @@ export default function GalleryPage() {
     e.preventDefault()
     
     // Check if this is a file drop or an image reorder
-    if (draggedItem) {
+    const isImageReorder = e.dataTransfer.types.includes('text/image-reorder')
+    if (isImageReorder) {
       // This is an image reorder, ignore
       return
     }
@@ -172,7 +173,7 @@ export default function GalleryPage() {
     
     // Clear status after 5 seconds
     setTimeout(() => setUploadStatus(""), 5000)
-  }, [draggedItem])
+  }, [])
 
   const handleFileDragOver = (e: React.DragEvent) => {
     e.preventDefault()
@@ -294,6 +295,8 @@ export default function GalleryPage() {
     console.log('Drag start:', work.title)
     setDraggedItem(work)
     e.dataTransfer.effectAllowed = 'move'
+    // Set a custom data type to identify image reordering
+    e.dataTransfer.setData('text/image-reorder', work.id)
     // Add drag image
     const dragImage = e.currentTarget.cloneNode(true) as HTMLElement
     dragImage.style.opacity = '0.5'
