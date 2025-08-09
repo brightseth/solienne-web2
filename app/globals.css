@@ -69,10 +69,10 @@ button[type="button"]:not([class*="nav"]):not([class*="upload"]):not([id]):not(.
   display: none !important;
 }
 
-/* Hide all potential overlay elements inside grid items but preserve upload */
-.aspect-square button:not(.upload-button),
-.aspect-square [role="button"]:not(.upload-button),
-.aspect-square .button:not(.upload-button) {
+/* Hide all potential overlay elements inside grid items but preserve upload and delete */
+.aspect-square button:not(.upload-button):not([title="Delete image"]),
+.aspect-square [role="button"]:not(.upload-button):not([title="Delete image"]),
+.aspect-square .button:not(.upload-button):not([title="Delete image"]) {
   display: none !important;
 }
 

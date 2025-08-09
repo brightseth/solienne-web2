@@ -356,6 +356,18 @@ export default function GalleryPage() {
                       <div className="absolute top-1 right-1 w-2 h-2 bg-[#d4af37] rounded-full"></div>
                     )}
                     
+                    {/* Delete button on hover */}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        deleteWork(work)
+                      }}
+                      className="absolute top-1 left-1 w-5 h-5 bg-red-600/80 hover:bg-red-600 text-white text-xs rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center"
+                      title="Delete image"
+                    >
+                      ×
+                    </button>
+                    
                   </div>
                 ))}
               </div>
