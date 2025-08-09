@@ -216,6 +216,28 @@ export default function GalleryPage() {
             <li><Link href="/" className="nav-link">home</Link></li>
             <li><Link href="/seven-breaths" className="nav-link">seven breaths</Link></li>
             <li><Link href="/gallery" className="nav-link active">gallery</Link></li>
+            <li>
+              <input
+                type="file"
+                accept="image/*,video/*"
+                multiple
+                onChange={async (e) => {
+                  const files = Array.from(e.target.files || [])
+                  if (files.length > 0) {
+                    const fakeEvent = {
+                      preventDefault: () => {},
+                      dataTransfer: { files }
+                    } as any
+                    handleDrop(fakeEvent)
+                  }
+                }}
+                className="hidden"
+                id="nav-file-input"
+              />
+              <label htmlFor="nav-file-input" className="nav-link cursor-pointer">
+                + add
+              </label>
+            </li>
           </ul>
         </div>
       </nav>
@@ -304,32 +326,6 @@ export default function GalleryPage() {
             </div>
           )}
 
-          {/* Persistent Upload UI at bottom */}
-          <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-20">
-            <input
-              type="file"
-              accept="image/*,video/*"
-              multiple
-              onChange={async (e) => {
-                const files = Array.from(e.target.files || [])
-                if (files.length > 0) {
-                  const fakeEvent = {
-                    preventDefault: () => {},
-                    dataTransfer: { files }
-                  } as any
-                  handleDrop(fakeEvent)
-                }
-              }}
-              className="hidden"
-              id="file-input-persistent"
-            />
-            <label 
-              htmlFor="file-input-persistent" 
-              className="upload-button cursor-pointer bg-black/80 backdrop-blur border border-gray-700 hover:border-[#d4af37] text-white/70 hover:text-[#d4af37] px-4 py-2 rounded-full text-sm transition-all hover:bg-black/90 block"
-            >
-              + Add Images
-            </label>
-          </div>
         </div>
       )}
 
