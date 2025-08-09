@@ -64,23 +64,31 @@ video::after {
   pointer-events: none;
 }
 
-/* Remove any possible button overlays */
-button[type="button"]:not([class*="nav"]):not([class*="upload"]):not([id]) {
+/* Remove any possible button overlays but preserve upload buttons */
+button[type="button"]:not([class*="nav"]):not([class*="upload"]):not([id]):not(.upload-button) {
   display: none !important;
 }
 
-/* Hide all potential overlay elements inside grid items */
-.aspect-square button,
-.aspect-square [role="button"],
-.aspect-square .button {
+/* Hide all potential overlay elements inside grid items but preserve upload */
+.aspect-square button:not(.upload-button),
+.aspect-square [role="button"]:not(.upload-button),
+.aspect-square .button:not(.upload-button) {
   display: none !important;
 }
 
-/* Specifically target any play button styles */
-[aria-label*="play"],
-[title*="play"],
-.play-button {
+/* Specifically target any play button styles but preserve upload */
+[aria-label*="play"]:not(.upload-button),
+[title*="play"]:not(.upload-button),
+.play-button:not(.upload-button) {
   display: none !important;
+}
+
+/* Ensure upload button is always visible */
+.upload-button,
+label.upload-button {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
 }
 
 /* Navigation */

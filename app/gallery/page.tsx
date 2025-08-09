@@ -325,7 +325,7 @@ export default function GalleryPage() {
             />
             <label 
               htmlFor="file-input-persistent" 
-              className="cursor-pointer bg-black/80 backdrop-blur border border-gray-700 hover:border-[#d4af37] text-white/70 hover:text-[#d4af37] px-4 py-2 rounded-full text-sm transition-all hover:bg-black/90"
+              className="upload-button cursor-pointer bg-black/80 backdrop-blur border border-gray-700 hover:border-[#d4af37] text-white/70 hover:text-[#d4af37] px-4 py-2 rounded-full text-sm transition-all hover:bg-black/90 block"
             >
               + Add Images
             </label>
