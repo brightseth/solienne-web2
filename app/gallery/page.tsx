@@ -310,11 +310,22 @@ export default function GalleryPage() {
             ) : null}
             <li>
               {isAdmin ? (
-                <button onClick={handleAdminLogout} className="nav-link cursor-pointer">
+                <button 
+                  onClick={handleAdminLogout} 
+                  className="nav-link cursor-pointer border-none bg-transparent text-[#b8b8b8] hover:text-white transition-colors"
+                  style={{ all: 'unset', cursor: 'pointer', fontSize: '0.85rem', fontWeight: '300', letterSpacing: '0.1em', textTransform: 'lowercase' }}
+                >
                   logout
                 </button>
               ) : (
-                <button onClick={() => setShowAdminLogin(true)} className="nav-link cursor-pointer">
+                <button 
+                  onClick={() => {
+                    console.log('Admin button clicked!')
+                    setShowAdminLogin(true)
+                  }} 
+                  className="nav-link cursor-pointer border-none bg-transparent text-[#b8b8b8] hover:text-white transition-colors"
+                  style={{ all: 'unset', cursor: 'pointer', fontSize: '0.85rem', fontWeight: '300', letterSpacing: '0.1em', textTransform: 'lowercase' }}
+                >
                   admin
                 </button>
               )}

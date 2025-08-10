@@ -178,6 +178,16 @@ label.upload-button {
   background: var(--golden-glow);
 }
 
+/* Ensure navigation buttons are clickable */
+.nav-links button {
+  border: none;
+  background: none;
+  padding: 0;
+  margin: 0;
+  pointer-events: auto !important;
+  z-index: 10;
+}
+
 /* Main Content */
 .main-content {
   margin-top: 100px;
