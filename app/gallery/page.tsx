@@ -293,7 +293,7 @@ export default function GalleryPage() {
           <ul className="nav-links">
             <li><Link href="/" className="nav-link">home</Link></li>
             <li><Link href="/gallery" className="nav-link active">gallery</Link></li>
-            {isAdmin ? (
+            {isAdmin && (
               <li>
                 <input
                   type="file"
@@ -307,32 +307,32 @@ export default function GalleryPage() {
                   {isUploading ? 'uploading...' : '+ add'}
                 </label>
               </li>
-            ) : null}
-            <li>
-              {isAdmin ? (
-                <button 
-                  onClick={handleAdminLogout} 
-                  className="nav-link cursor-pointer border-none bg-transparent text-[#b8b8b8] hover:text-white transition-colors"
-                  style={{ all: 'unset', cursor: 'pointer', fontSize: '0.85rem', fontWeight: '300', letterSpacing: '0.1em', textTransform: 'lowercase' }}
-                >
-                  logout
-                </button>
-              ) : (
-                <button 
-                  onClick={() => {
-                    console.log('Admin button clicked!')
-                    setShowAdminLogin(true)
-                  }} 
-                  className="nav-link cursor-pointer border-none bg-transparent text-[#b8b8b8] hover:text-white transition-colors"
-                  style={{ all: 'unset', cursor: 'pointer', fontSize: '0.85rem', fontWeight: '300', letterSpacing: '0.1em', textTransform: 'lowercase' }}
-                >
-                  admin
-                </button>
-              )}
-            </li>
+            )}
           </ul>
         </div>
       </nav>
+
+      {/* Admin Button - Floating */}
+      <div className="fixed top-6 right-6 z-50">
+        {isAdmin ? (
+          <button 
+            onClick={handleAdminLogout} 
+            className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-full text-sm font-medium transition-colors shadow-lg"
+          >
+            Logout Admin
+          </button>
+        ) : (
+          <button 
+            onClick={() => {
+              console.log('Admin button clicked!')
+              setShowAdminLogin(true)
+            }} 
+            className="bg-[#d4af37] hover:bg-[#b8941f] text-black px-4 py-2 rounded-full text-sm font-medium transition-colors shadow-lg"
+          >
+            Admin Login
+          </button>
+        )}
+      </div>
 
       {viewMode === "grid" && (
         <div className="min-h-screen">
