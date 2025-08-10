@@ -30,10 +30,18 @@ export default function GalleryPage() {
   const [sortBy, setSortBy] = useState<"date" | "title">("date")
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [isAdmin, setIsAdmin] = useState(false)
+  const [adminPassword, setAdminPassword] = useState("")
+  const [showAdminLogin, setShowAdminLogin] = useState(false)
 
-  // Load works on mount
+  // Load works on mount and check admin status
   useEffect(() => {
     loadWorks()
+    // Check if already authenticated
+    const adminAuth = localStorage.getItem('solienne-admin')
+    if (adminAuth === 'authenticated') {
+      setIsAdmin(true)
+    }
   }, [])
 
   // Keyboard navigation
@@ -81,6 +89,12 @@ export default function GalleryPage() {
   }
 
   const handleFileUpload = async (files: FileList) => {
+    if (!isAdmin) {
+      setUploadStatus('✗ Admin access required')
+      setTimeout(() => setUploadStatus(''), 3000)
+      return
+    }
+    
     setIsUploading(true)
     let successCount = 0
     
@@ -133,7 +147,31 @@ export default function GalleryPage() {
     setTimeout(() => setUploadStatus(""), 3000)
   }
 
+  const handleAdminLogin = () => {
+    // Simple password check - in production, use proper authentication
+    if (adminPassword === 'solienne2025') {
+      setIsAdmin(true)
+      setShowAdminLogin(false)
+      setAdminPassword('')
+      localStorage.setItem('solienne-admin', 'authenticated')
+      setUploadStatus('✓ Admin access granted')
+      setTimeout(() => setUploadStatus(''), 2000)
+    } else {
+      setUploadStatus('✗ Invalid password')
+      setTimeout(() => setUploadStatus(''), 3000)
+    }
+  }
+
+  const handleAdminLogout = () => {
+    setIsAdmin(false)
+    localStorage.removeItem('solienne-admin')
+    setUploadStatus('Logged out')
+    setTimeout(() => setUploadStatus(''), 2000)
+  }
+
   const deleteWork = async (work: Work) => {
+    if (!isAdmin) return
+    
     try {
       const response = await fetch(`/api/works-sync?id=${work.id}`, { method: 'DELETE' })
       
@@ -147,6 +185,52 @@ export default function GalleryPage() {
       }
     } catch (error) {
       console.error('Delete error:', error)
+    }
+  }
+
+  const moveWorkUp = async (work: Work, index: number) => {
+    if (!isAdmin || index === 0) return
+    
+    const newWorks = [...works]
+    const [movedWork] = newWorks.splice(index, 1)
+    newWorks.splice(index - 1, 0, movedWork)
+    setWorks(newWorks)
+    
+    // Save new order
+    try {
+      await saveWorksOrder(newWorks)
+      setUploadStatus('✓ Order updated')
+      setTimeout(() => setUploadStatus(''), 2000)
+    } catch (error) {
+      console.error('Failed to save order:', error)
+    }
+  }
+
+  const moveWorkDown = async (work: Work, index: number) => {
+    if (!isAdmin || index === works.length - 1) return
+    
+    const newWorks = [...works]
+    const [movedWork] = newWorks.splice(index, 1)
+    newWorks.splice(index + 1, 0, movedWork)
+    setWorks(newWorks)
+    
+    // Save new order
+    try {
+      await saveWorksOrder(newWorks)
+      setUploadStatus('✓ Order updated')
+      setTimeout(() => setUploadStatus(''), 2000)
+    } catch (error) {
+      console.error('Failed to save order:', error)
+    }
+  }
+
+  const saveWorksOrder = async (orderedWorks: Work[]) => {
+    for (let i = 0; i < orderedWorks.length; i++) {
+      await fetch('/api/works-sync', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...orderedWorks[i], order: i })
+      })
     }
   }
 
@@ -209,18 +293,31 @@ export default function GalleryPage() {
           <ul className="nav-links">
             <li><Link href="/" className="nav-link">home</Link></li>
             <li><Link href="/gallery" className="nav-link active">gallery</Link></li>
+            {isAdmin ? (
+              <li>
+                <input
+                  type="file"
+                  accept="image/*,video/*"
+                  multiple
+                  onChange={(e) => e.target.files && handleFileUpload(e.target.files)}
+                  className="hidden"
+                  id="nav-file-input"
+                />
+                <label htmlFor="nav-file-input" className="nav-link cursor-pointer">
+                  {isUploading ? 'uploading...' : '+ add'}
+                </label>
+              </li>
+            ) : null}
             <li>
-              <input
-                type="file"
-                accept="image/*,video/*"
-                multiple
-                onChange={(e) => e.target.files && handleFileUpload(e.target.files)}
-                className="hidden"
-                id="nav-file-input"
-              />
-              <label htmlFor="nav-file-input" className="nav-link cursor-pointer">
-                {isUploading ? 'uploading...' : '+ add'}
-              </label>
+              {isAdmin ? (
+                <button onClick={handleAdminLogout} className="nav-link cursor-pointer">
+                  logout
+                </button>
+              ) : (
+                <button onClick={() => setShowAdminLogin(true)} className="nav-link cursor-pointer">
+                  admin
+                </button>
+              )}
             </li>
           </ul>
         </div>
@@ -297,8 +394,23 @@ export default function GalleryPage() {
                   🎬 Presentation
                 </button>
                 <div className="text-gray-400 text-sm px-3 py-2">
-                  💡 Click images to view
+                  💡 Click images to view {isAdmin && '• Admin mode active'}
                 </div>
+                {isAdmin && (
+                  <input
+                    type="file"
+                    accept="image/*,video/*"
+                    multiple
+                    onChange={(e) => e.target.files && handleFileUpload(e.target.files)}
+                    className="hidden"
+                    id="gallery-file-input"
+                  />
+                )}
+                {isAdmin && (
+                  <label htmlFor="gallery-file-input" className="bg-[#d4af37] hover:bg-[#b8941f] text-black px-3 py-2 rounded text-sm cursor-pointer transition-colors">
+                    + Add Images
+                  </label>
+                )}
                 <input
                   type="text"
                   placeholder="Search works..."
@@ -337,53 +449,91 @@ export default function GalleryPage() {
           {works.length > 0 && !isLoading && (
             <div className="max-w-7xl mx-auto px-6 pb-32">
               <div className="gallery-grid grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2">
-                {filteredWorks.map((work) => (
-                  <div key={work.id} className="group relative aspect-square bg-black overflow-hidden cursor-pointer border border-gray-800 hover:border-[#d4af37] transition-colors duration-200">
-                    <div onClick={() => openPresentation(work)} className="w-full h-full">
-                      {work.type === "video" ? (
-                        <video
-                          src={work.mediaUrl}
-                          className="w-full h-full object-cover transition-transform duration-200 group-hover:scale-105"
-                          muted
-                          playsInline
-                          preload="metadata"
-                          draggable="false"
-                        />
-                      ) : (
-                        <img
-                          src={work.mediaUrl}
-                          alt={work.title}
-                          className="w-full h-full object-cover transition-transform duration-200 group-hover:scale-105"
-                          loading="lazy"
-                          draggable="false"
-                          onError={(e) => {
-                            const target = e.target as HTMLImageElement
-                            target.style.visibility = 'hidden'
-                          }}
-                        />
+                {filteredWorks.map((work, index) => {
+                  const originalIndex = works.findIndex(w => w.id === work.id)
+                  return (
+                    <div key={work.id} className="group relative aspect-square bg-black overflow-hidden cursor-pointer border border-gray-800 hover:border-[#d4af37] transition-colors duration-200">
+                      <div onClick={() => openPresentation(work)} className="w-full h-full">
+                        {work.type === "video" ? (
+                          <video
+                            src={work.mediaUrl}
+                            className="w-full h-full object-cover transition-transform duration-200 group-hover:scale-105"
+                            muted
+                            playsInline
+                            preload="metadata"
+                            draggable="false"
+                          />
+                        ) : (
+                          <img
+                            src={work.mediaUrl}
+                            alt={work.title}
+                            className="w-full h-full object-cover transition-transform duration-200 group-hover:scale-105"
+                            loading="lazy"
+                            draggable="false"
+                            onError={(e) => {
+                              const target = e.target as HTMLImageElement
+                              target.style.visibility = 'hidden'
+                            }}
+                          />
+                        )}
+                      </div>
+                      
+                      {work.featured && (
+                        <div className="absolute top-1 right-1 w-2 h-2 bg-[#d4af37] rounded-full"></div>
+                      )}
+                      
+                      {/* Admin controls */}
+                      {isAdmin && (
+                        <>
+                          {/* Delete button */}
+                          <button
+                            onClick={(e) => {
+                              e.preventDefault()
+                              e.stopPropagation()
+                              if (confirm(`Delete "${work.title}"?`)) {
+                                deleteWork(work)
+                              }
+                            }}
+                            className="absolute top-1 left-1 w-6 h-6 bg-red-600 hover:bg-red-700 text-white text-sm font-bold rounded-full flex items-center justify-center z-20 transition-all duration-200"
+                            title="Delete image"
+                          >
+                            ×
+                          </button>
+                          
+                          {/* Reorder controls */}
+                          <div className="absolute bottom-1 left-1 flex flex-col gap-1">
+                            {originalIndex > 0 && (
+                              <button
+                                onClick={(e) => {
+                                  e.preventDefault()
+                                  e.stopPropagation()
+                                  moveWorkUp(work, originalIndex)
+                                }}
+                                className="w-6 h-6 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-full flex items-center justify-center z-20 transition-all duration-200"
+                                title="Move up"
+                              >
+                                ↑
+                              </button>
+                            )}
+                            {originalIndex < works.length - 1 && (
+                              <button
+                                onClick={(e) => {
+                                  e.preventDefault()
+                                  e.stopPropagation()
+                                  moveWorkDown(work, originalIndex)
+                                }}
+                                className="w-6 h-6 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-full flex items-center justify-center z-20 transition-all duration-200"
+                                title="Move down"
+                              >
+                                ↓
+                              </button>
+                            )}
+                          </div>
+                        </>
                       )}
                     </div>
-                    
-                    {work.featured && (
-                      <div className="absolute top-1 right-1 w-2 h-2 bg-[#d4af37] rounded-full"></div>
-                    )}
-                    
-                    {/* Delete button */}
-                    <button
-                      onClick={(e) => {
-                        e.preventDefault()
-                        e.stopPropagation()
-                        if (confirm(`Delete "${work.title}"?`)) {
-                          deleteWork(work)
-                        }
-                      }}
-                      className="delete-btn absolute top-1 left-1 w-7 h-7 bg-red-600 hover:bg-red-700 text-white text-lg font-bold rounded-full flex items-center justify-center z-20 transition-all duration-200 opacity-70 hover:opacity-100 md:opacity-0 md:group-hover:opacity-100"
-                      title="Delete image"
-                    >
-                      ×
-                    </button>
-                  </div>
-                ))}
+                  )
+                })}
               </div>
             </div>
           )}
@@ -394,6 +544,41 @@ export default function GalleryPage() {
       {uploadStatus && (
         <div className="fixed top-20 right-4 bg-black/90 backdrop-blur border border-gray-700 text-white px-4 py-2 rounded text-sm z-30">
           {uploadStatus}
+        </div>
+      )}
+
+      {/* Admin Login Modal */}
+      {showAdminLogin && (
+        <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center">
+          <div className="bg-black border border-gray-700 p-6 rounded max-w-md w-full mx-4">
+            <h2 className="text-xl font-light mb-4 text-white">Admin Login</h2>
+            <input
+              type="password"
+              placeholder="Enter password"
+              value={adminPassword}
+              onChange={(e) => setAdminPassword(e.target.value)}
+              onKeyPress={(e) => e.key === 'Enter' && handleAdminLogin()}
+              className="w-full bg-black border border-gray-700 text-white px-3 py-2 rounded mb-4"
+              autoFocus
+            />
+            <div className="flex gap-2">
+              <button
+                onClick={handleAdminLogin}
+                className="flex-1 bg-[#d4af37] hover:bg-[#b8941f] text-black px-4 py-2 rounded transition-colors"
+              >
+                Login
+              </button>
+              <button
+                onClick={() => {
+                  setShowAdminLogin(false)
+                  setAdminPassword('')
+                }}
+                className="flex-1 bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
