@@ -31,8 +31,8 @@ export default function ConsciousnessParticles() {
       energy: number
 
       constructor() {
-        this.x = Math.random() * canvas.width
-        this.y = Math.random() * canvas.height
+        this.x = Math.random() * (canvas?.width || 800)
+        this.y = Math.random() * (canvas?.height || 600)
         this.vx = (Math.random() - 0.5) * 0.3
         this.vy = (Math.random() - 0.5) * 0.3
         this.size = Math.random() * 2 + 0.5
@@ -67,11 +67,11 @@ export default function ConsciousnessParticles() {
         this.y += this.vy
 
         // Gentle boundaries with energy reflection
-        if (this.x < 0 || this.x > canvas.width) {
+        if (this.x < 0 || this.x > (canvas?.width || 800)) {
           this.vx *= -0.8
           this.energy *= 1.1 // Gain energy on collision
         }
-        if (this.y < 0 || this.y > canvas.height) {
+        if (this.y < 0 || this.y > (canvas?.height || 600)) {
           this.vy *= -0.8
           this.energy *= 1.1
         }
