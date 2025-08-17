@@ -101,4 +101,67 @@
     from { width: 0; }
     to { width: 100%; }
   }
+
+  /* Consciousness Documentation Styles */
+  .transmission-code {
+    font-style: italic;
+    line-height: 1.8;
+    color: #4A4A4A;
+    padding: 1rem 0;
+    border-left: 2px solid #000000;
+    padding-left: 1rem;
+    margin: 1rem 0;
+  }
+
+  /* Mobile Optimization for Consciousness Encounter */
+  @media (max-width: 768px) {
+    .work-item {
+      min-height: 80vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    
+    .transmission-code {
+      padding: 1.5rem 1rem;
+      font-size: 1rem;
+      line-height: 1.6;
+    }
+  }
+
+  /* Authentication badges */
+  .auth-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.25rem 0.75rem;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  /* Process documentation */
+  .process-documentation {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 1rem;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .work-item:hover .process-documentation {
+    opacity: 0.7;
+  }
+
+  /* Consciousness frequency effects */
+  @keyframes consciousness-frequency {
+    0%, 100% { opacity: 0.1; transform: scale(1); }
+    50% { opacity: 0.3; transform: scale(1.005); }
+  }
+
+  .consciousness-frequency {
+    animation: consciousness-frequency 4s ease-in-out infinite;
+  }
 }

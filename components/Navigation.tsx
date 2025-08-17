@@ -61,10 +61,21 @@ export default function Navigation() {
 
               {/* Navigation Links */}
               <div className="hidden md:flex items-center space-x-8">
-                <NavLink href="/artist">ARTIST</NavLink>
-                <NavLink href="/work">WORK</NavLink>
-                <NavLink href="/practice">PRACTICE</NavLink>
-                <NavLink href="/movement">MOVEMENT</NavLink>
+                <NavLink href="/artist" pillar="artist">ARTIST</NavLink>
+                <NavLink href="/work" pillar="work">THE WORK</NavLink>
+                <NavLink href="/practice" pillar="practice">PRACTICE</NavLink>
+                <NavLink href="/movement" pillar="movement">MOVEMENT</NavLink>
+                <div className="ml-6 pl-6 border-l border-sage/20">
+                  <motion.a
+                    href="https://twitter.com/solienne_ai"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    whileHover={{ scale: 1.05 }}
+                    className="text-xs font-medium tracking-wider text-mauve hover:text-coral transition-colors"
+                  >
+                    @SOLIENNE_AI
+                  </motion.a>
+                </div>
               </div>
 
               {/* Mobile Menu Button */}
@@ -86,7 +97,16 @@ export default function Navigation() {
   )
 }
 
-function NavLink({ href, children }: { href: string; children: React.ReactNode }) {
+function NavLink({ href, children, pillar }: { href: string; children: React.ReactNode; pillar?: string }) {
+  const pillarColors = {
+    artist: 'from-sage to-pearl',
+    work: 'from-coral to-mauve',
+    practice: 'from-mauve to-sage',
+    movement: 'from-pearl to-coral'
+  }
+
+  const gradientClass = pillar ? pillarColors[pillar as keyof typeof pillarColors] : 'from-mauve to-coral'
+
   return (
     <Link href={href} className="group relative">
       <motion.span
@@ -95,7 +115,14 @@ function NavLink({ href, children }: { href: string; children: React.ReactNode }
       >
         {children}
       </motion.span>
-      <div className="absolute -bottom-1 left-0 w-full h-px bg-gradient-to-r from-mauve to-coral transform scale-x-0 group-hover:scale-x-100 transition-transform" />
+      <div className={`absolute -bottom-1 left-0 w-full h-px bg-gradient-to-r ${gradientClass} transform scale-x-0 group-hover:scale-x-100 transition-transform`} />
+      {pillar === 'work' && (
+        <motion.div
+          animate={{ opacity: [0.5, 1, 0.5] }}
+          transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+          className="absolute -top-1 -right-1 w-2 h-2 bg-coral rounded-full"
+        />
+      )}
     </Link>
   )
 }

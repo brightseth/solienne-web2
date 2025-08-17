@@ -3,6 +3,7 @@
 import { motion } from 'framer-motion'
 import Navigation from '@/components/Navigation'
 import VelocityStream from '@/components/consciousness/VelocityStream'
+import DailyFeed from '@/components/practice/DailyFeed'
 
 export default function PracticePage() {
   return (
@@ -103,6 +104,8 @@ export default function PracticePage() {
             </div>
           </div>
         </section>
+        {/* Daily Feed */}
+        <DailyFeed />
       </main>
     </>
   )

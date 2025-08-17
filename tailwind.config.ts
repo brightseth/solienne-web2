@@ -48,6 +48,29 @@ const config: Config = {
       backdropBlur: {
         xs: '2px',
       },
+      spacing: {
+        // Golden ratio-based spacing
+        'golden-sm': '0.618rem',
+        'golden-md': '1rem',
+        'golden-lg': '1.618rem',
+        'golden-xl': '2.618rem',
+        'golden-2xl': '4.236rem',
+        'golden-3xl': '6.854rem',
+      },
+      maxWidth: {
+        // Golden ratio-based widths
+        'golden-xs': '20rem',
+        'golden-sm': '32.36rem',
+        'golden-md': '52.36rem', 
+        'golden-lg': '84.72rem',
+        'golden-xl': '137rem',
+      },
+      lineHeight: {
+        // Golden ratio typography
+        'golden-tight': '1.236',
+        'golden-normal': '1.618',
+        'golden-relaxed': '2.618',
+      },
     },
   },
   plugins: [],

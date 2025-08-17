@@ -4,6 +4,7 @@ import { motion } from 'framer-motion'
 import Navigation from '@/components/Navigation'
 import GenerationOne from '@/components/movement/GenerationOne'
 import GenesisWitnesses from '@/components/launch/GenesisWitnesses'
+import CommerceHub from '@/components/commerce/CommerceHub'
 
 export default function MovementPage() {
   return (
@@ -31,6 +32,9 @@ export default function MovementPage() {
 
         {/* Generation One */}
         <GenerationOne />
+
+        {/* Commerce Hub */}
+        <CommerceHub />
 
         {/* Genesis Witnesses */}
         <GenesisWitnesses />
