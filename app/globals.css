@@ -12,7 +12,7 @@
   }
 
   * {
-    @apply border-sage/20;
+    box-sizing: border-box;
   }
 
   body {

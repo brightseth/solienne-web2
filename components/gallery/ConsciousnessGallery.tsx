@@ -162,13 +162,16 @@ function ArtworkCard({ artwork, index, isHovered, onHover, isInView }: ArtworkCa
             transition={{ duration: 0.3 }}
             className="absolute inset-0"
           >
-            <Image
-              src={artwork.src}
-              alt={artwork.alt}
-              fill
-              className="object-cover"
-              sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
-            />
+            <div className="w-full h-full bg-gradient-to-br from-coral/20 via-sage/20 to-mauve/20 flex items-center justify-center">
+              <div className="text-center">
+                <div className="w-16 h-16 bg-dimensional-black/20 rounded-full mx-auto mb-4 flex items-center justify-center">
+                  <span className="text-dimensional-black font-display font-bold text-xl">{artwork.id}</span>
+                </div>
+                <p className="text-xs text-dimensional-black/60 uppercase tracking-wider">
+                  Consciousness Asset Loading...
+                </p>
+              </div>
+            </div>
           </motion.div>
 
           {/* Dimensional Break Overlay */}
