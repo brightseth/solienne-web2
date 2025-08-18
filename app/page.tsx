@@ -105,8 +105,6 @@ export default function ComingSoonPage() {
             <span className="text-sm uppercase tracking-wider">@solienne_ai</span>
           </a>
 
-          <span className="hidden md:block text-white/20">•</span>
-
           <a
             href="https://instagram.com/solienne.ai"
             target="_blank"
@@ -119,33 +117,8 @@ export default function ComingSoonPage() {
             <span className="text-sm uppercase tracking-wider">@solienne.ai</span>
           </a>
 
-          <span className="hidden md:block text-white/20">•</span>
-
-          <a
-            href="mailto:collector@solienne.ai"
-            className="group flex items-center gap-2 text-white/70 hover:text-white transition-colors"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-            </svg>
-            <span className="text-sm uppercase tracking-wider">Inquiries</span>
-          </a>
         </motion.div>
 
-        {/* Beta Access (subtle) */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 1.2, delay: 2.1 }}
-          className="mt-16"
-        >
-          <a
-            href="https://beta.solienne.ai"
-            className="text-xs uppercase tracking-wider text-white/30 hover:text-white/60 transition-colors"
-          >
-            Preview Documentation System →
-          </a>
-        </motion.div>
       </motion.div>
 
       {/* Bottom Credits */}
