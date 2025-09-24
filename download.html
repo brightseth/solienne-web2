@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SOLIENNE Browser - Download</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0a0a;
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+        }
+        
+        h1 {
+            font-size: 3em;
+            font-weight: 200;
+            letter-spacing: 4px;
+            margin-bottom: 30px;
+        }
+        
+        .auth-box {
+            background: #111;
+            border: 1px solid #222;
+            border-radius: 12px;
+            padding: 40px 30px;
+            margin-bottom: 30px;
+        }
+        
+        .auth-box.hidden {
+            display: none;
+        }
+        
+        .password-label {
+            display: block;
+            margin-bottom: 15px;
+            font-size: 0.9em;
+            color: #888;
+            letter-spacing: 1px;
+        }
+        
+        .password-input {
+            width: 100%;
+            background: #0a0a0a;
+            border: 1px solid #333;
+            color: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 1.1em;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .password-input:focus {
+            outline: none;
+            border-color: #666;
+        }
+        
+        .unlock-btn {
+            width: 100%;
+            background: #fff;
+            color: #000;
+            border: none;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: 600;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .unlock-btn:hover {
+            background: #f0f0f0;
+            transform: translateY(-2px);
+        }
+        
+        .error-msg {
+            color: #ff6666;
+            font-size: 0.9em;
+            margin-top: 15px;
+            display: none;
+        }
+        
+        .download-box {
+            display: none;
+            background: #111;
+            border: 1px solid #222;
+            border-radius: 12px;
+            padding: 40px 30px;
+        }
+        
+        .download-box.visible {
+            display: block;
+        }
+        
+        .success-icon {
+            font-size: 3em;
+            margin-bottom: 20px;
+        }
+        
+        .version-info {
+            color: #888;
+            font-size: 0.9em;
+            margin-bottom: 30px;
+            letter-spacing: 1px;
+        }
+        
+        .download-section {
+            margin-bottom: 30px;
+        }
+        
+        .download-section h3 {
+            font-size: 1.1em;
+            font-weight: 400;
+            margin-bottom: 15px;
+            color: #ccc;
+        }
+        
+        .big-download-btn {
+            display: block;
+            width: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+            border: none;
+            padding: 20px;
+            border-radius: 12px;
+            font-size: 1.2em;
+            font-weight: 600;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            margin-bottom: 15px;
+        }
+        
+        .big-download-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+        }
+        
+        .big-download-btn.windows {
+            background: linear-gradient(135deg, #00c6fb 0%, #005bea 100%);
+        }
+        
+        .platform-note {
+            color: #666;
+            font-size: 0.8em;
+            margin-top: 5px;
+        }
+        
+        .simple-steps {
+            text-align: left;
+            background: #0a0a0a;
+            border: 1px solid #222;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 30px;
+        }
+        
+        .simple-steps h4 {
+            font-size: 1em;
+            margin-bottom: 15px;
+            color: #fff;
+        }
+        
+        .simple-steps ol {
+            padding-left: 20px;
+            color: #ccc;
+        }
+        
+        .simple-steps li {
+            margin-bottom: 10px;
+            line-height: 1.6;
+        }
+        
+        .help-text {
+            margin-top: 30px;
+            padding-top: 30px;
+            border-top: 1px solid #222;
+            color: #666;
+            font-size: 0.85em;
+        }
+        
+        .help-text a {
+            color: #888;
+            text-decoration: none;
+        }
+        
+        .help-text a:hover {
+            color: #fff;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .download-box.visible {
+            animation: fadeIn 0.5s ease;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>SOLIENNE</h1>
+        
+        <!-- Password Section -->
+        <div class="auth-box" id="authBox">
+            <label class="password-label">Enter your access code</label>
+            <input 
+                type="password" 
+                class="password-input" 
+                id="passwordInput" 
+                placeholder="Type password here"
+                autocomplete="off"
+            >
+            <button class="unlock-btn" onclick="checkPassword()">
+                UNLOCK DOWNLOADS
+            </button>
+            <div class="error-msg" id="errorMsg">
+                That's not the right password. Try again!
+            </div>
+        </div>
+        
+        <!-- Download Section (hidden initially) -->
+        <div class="download-box" id="downloadBox">
+            <div class="success-icon">✨</div>
+            <h2 style="margin-bottom: 10px; font-weight: 300;">Welcome!</h2>
+            <p class="version-info">SOLIENNE Browser v1.1.0</p>
+            
+            <div class="download-section">
+                <h3>Choose your computer type:</h3>
+                
+                <a href="#" onclick="startDownload('mac'); return false;" class="big-download-btn">
+                    🍎 Download for Mac
+                </a>
+                <p class="platform-note">For MacBook, iMac, Mac Mini</p>
+                
+                <a href="#" onclick="startDownload('windows'); return false;" class="big-download-btn windows" style="margin-top: 20px;">
+                    🪟 Download for Windows
+                </a>
+                <p class="platform-note">For PC, laptop with Windows</p>
+            </div>
+            
+            <div class="simple-steps">
+                <h4>📋 Super Simple Install Steps:</h4>
+                <ol>
+                    <li><strong>Download</strong> will start automatically (check your Downloads folder)</li>
+                    <li><strong>Unzip</strong> the file (double-click it)</li>
+                    <li><strong>Mac:</strong> Double-click "INSTALL.sh"<br>
+                        <strong>Windows:</strong> Double-click "INSTALL.bat"</li>
+                    <li><strong>Done!</strong> The browser will open automatically</li>
+                </ol>
+            </div>
+            
+            <div class="help-text">
+                Need help? Text Seth! 📱<br>
+                <small>The browser will check for updates automatically</small>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Simple password check
+        const PASSWORDS = ['kristi', 'solienne2025', 'consciousness'];
+        
+        // Check if already unlocked
+        if (localStorage.getItem('solienne_unlocked') === 'yes') {
+            showDownloads();
+        }
+        
+        // Allow Enter key to submit
+        document.getElementById('passwordInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                checkPassword();
+            }
+        });
+        
+        function checkPassword() {
+            const input = document.getElementById('passwordInput').value.toLowerCase();
+            const errorMsg = document.getElementById('errorMsg');
+            
+            if (PASSWORDS.includes(input)) {
+                // Success!
+                localStorage.setItem('solienne_unlocked', 'yes');
+                showDownloads();
+            } else {
+                // Wrong password
+                errorMsg.style.display = 'block';
+                document.getElementById('passwordInput').value = '';
+                
+                // Hide error after 3 seconds
+                setTimeout(() => {
+                    errorMsg.style.display = 'none';
+                }, 3000);
+            }
+        }
+        
+        function showDownloads() {
+            document.getElementById('authBox').style.display = 'none';
+            document.getElementById('downloadBox').classList.add('visible');
+        }
+        
+        function startDownload(platform) {
+            // Direct download from solienne.ai for now
+            // Will be replaced with GitHub releases later
+            const downloads = {
+                'mac': '/public/SOLIENNE_Browser_Kristi_20250924_144717.zip',
+                'windows': '/public/SOLIENNE_Browser_Kristi_20250924_144717.zip'
+            };
+            
+            // Create temporary link and trigger download
+            const link = document.createElement('a');
+            link.href = downloads[platform];
+            link.download = `SOLIENNE_Browser_${platform === 'mac' ? 'Mac' : 'Windows'}.zip`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            // Show a nice message
+            alert(`🎉 Download starting!\n\nCheck your Downloads folder in a few seconds.\n\nIf nothing happens, I'll text you a direct link!`);
+        }
+    </script>
+</body>
+</html>
